@@ -5,10 +5,10 @@
 # Set COMPRESSED to "YES" to create a compressed program
 # ----------------------------
 
-NAME        ?= DEMO
+NAME        ?= CHIP84
 COMPRESSED  ?= NO
 ICON        ?= icon.png
-DESCRIPTION ?= "demo"
+DESCRIPTION ?= "chip84"
 ARCHIVED    ?= YES
 
 # ----------------------------

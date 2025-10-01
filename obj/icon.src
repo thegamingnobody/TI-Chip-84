@@ -23,5 +23,5 @@ ___icon:
 	db	$FF, $FF, $FF, $FF, $FE, $B5, $B5, $B6, $B6, $B5, $B5, $FE, $FF, $FF, $FF, $FF
 	public ___description
 ___description:
-	db	"demo", 0
+	db	"chip84", 0
 ___prgm_init:
