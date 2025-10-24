@@ -65,7 +65,7 @@
 
 void RenderScreen()
 {
-    auto& renderer = Chip8::Renderer::GetInstance();
+    auto& renderer = Renderer::GetInstance();
 
     renderer.ResetBackground();
 
@@ -74,9 +74,13 @@ void RenderScreen()
 
 int main(void)
 {
-   	auto& renderer = Chip8::Renderer::GetInstance();
+   	auto& renderer = Renderer::GetInstance();
+    
+    int const canvasX{64};
+    int const canvasY{72};
+    int const renderScale{3};
 
-    renderer.Init(64, 32, 3);
+    renderer.Init(canvasX, canvasY, renderScale);
 
     /* Initialize graphics drawing */
     gfx_Begin();

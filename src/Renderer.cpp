@@ -1,22 +1,22 @@
 #include "Renderer.h"
 #include <graphx.h>
 
-
-void Chip8::Renderer::Init(int canvasX, int canvasY, int renderScale)
+void Renderer::Init(int canvasX, int canvasY, int renderScale)
 {
     CanvasX = canvasX;
     CanvasY = canvasY;
     RenderScale = renderScale;
 }
 
-void Chip8::Renderer::ResetBackground()
+void Renderer::ResetBackground()
 {
-    gfx_SetColor(0x00);
-    gfx_FillRectangle(CanvasX, CanvasY, 64 * RenderScale, 32 * RenderScale);
+    gfx_SetColor(m_Black);
+    gfx_FillRectangle(CanvasX, CanvasY, CanvasWidthBase * RenderScale, CanvasHeightBase * RenderScale);
 }
 
-void Chip8::Renderer::DrawPixel(int x, int y)
+void Renderer::DrawPixel(int x, int y)
 {
-    gfx_SetColor(0xFF);
+    gfx_SetColor(m_White);
     gfx_FillRectangle(CanvasX + (x * RenderScale), CanvasY + (y * RenderScale), RenderScale, RenderScale);
+
 }
