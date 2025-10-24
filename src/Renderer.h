@@ -1,18 +1,20 @@
 #pragma once
 
+#include "Singleton.h"
 
-//typedef X Y where X is the struct and Y is the new name
-typedef struct Renderer
+namespace Chip8
 {
-    int CanvasX;
-    int CanvasY;
-    int RenderScale;
-} Renderer;
+    class Renderer : public Singleton<Renderer>
+    {
+    public:
+        void Init(int canvasX, int canvasY, int renderScale = 1.0f);
 
-Renderer Renderer_Init(int canvasX, int canvasY, int renderScale);
+        void ResetBackground();
+        void DrawPixel(int x, int y);
 
-//Resets the game background to black
-void Renderer_ResetBackground(Renderer* renderer);
-
-//Draw a single pixel of the game
-void Renderer_DrawPixel(Renderer* renderer, int x, int y);
+    private:
+        int CanvasX;
+        int CanvasY;
+        int RenderScale;
+    };
+}
