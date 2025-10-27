@@ -20,3 +20,8 @@ void Renderer::DrawPixel(int x, int y)
     gfx_FillRectangle(CanvasX + (x * RenderScale), CanvasY + (y * RenderScale), RenderScale, RenderScale);
 
 }
+
+void Renderer::SwapBuffer()
+{
+    gfx_SwapDraw();
+}

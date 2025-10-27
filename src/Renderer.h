@@ -11,7 +11,11 @@ public:
     void ResetBackground();
     void DrawPixel(int x, int y);
 
+    void SwapBuffer();
+
 private:
+    //Todo: store pixels of screen? (tinystl vector?)
+
     int CanvasX;
     int CanvasY;
     int RenderScale;

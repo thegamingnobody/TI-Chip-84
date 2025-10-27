@@ -31,3 +31,10 @@ $(error CEDEV environment path variable is not set)
 endif
 
 include $(CEDEV)/meta/makefile.mk
+
+TINYSTL_DIR = thirdparty/tinystl/include
+
+# Add to C++ compiler flags:
+CXXFLAGS += -I$(TINYSTL_DIR)
+
+EXTRA_HEADERS += $(wildcard $(TINYSTL_DIR)/TINYSTL/*.h)
