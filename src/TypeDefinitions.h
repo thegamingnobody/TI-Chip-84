@@ -1,8 +1,5 @@
 #pragma once
-#include <TINYSTL/vector.h>
-
-using opcode = unsigned short;
-using byte = unsigned char;
+#include <stdint.h>
 
 #define PROGRAM_COUNTER_START 0x0200
 #define FONTSET_ADDRESS 0x50

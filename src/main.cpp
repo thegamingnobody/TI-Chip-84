@@ -18,65 +18,31 @@
 
 #include "Renderer.h"
 #include "TypeDefinitions.h"
-
-// void AppvarDinges()
-// {
-//     char nameBuffer[10];
-//     char string[] = "logo string";
-//     uint8_t var;
-//     // os_ClrHome();
-//     /* Open a new variable; deleting it if it already exists */
-//     var = ti_Open("LOGO", "r");
-//     /* Ensure the name of the AppVar is correct */
-//     ti_GetName(nameBuffer, var);
-//     /* Ensure that the slot is closed */
-//     char test[numbersToPrint];
-//     // int headerSize = 22;
-//     int headerSize = 0;
-//     for(int i = 0; i < headerSize; i++)
-//     {
-//         ti_GetC(var);
-//     }
-//     for(int i = 0; i < numbersToPrint; i++)
-//     {
-//         test[i] = ti_GetC(var);
-//         sprintf(test, "%02X", (unsigned char)test[i]);
-//         // gfx_PrintStringXY(test,
-//         //                 (18 * i),
-//         //                 1);
-//         gfx_PrintStringXY(test,
-//                         30,
-//                         10);
-//     }
-//     ti_Close(var);
-//     var = 0;
-// }
-
-void RenderScreen()
-{
-    auto& renderer = Renderer::GetInstance();
-
-    renderer.ResetBackground();
-
-    renderer.DrawPixel(2, 2);
-}
+#include "Interpreter.h"
 
 int main(void)
 {
     gfx_Begin();
 
-   	auto& renderer = Renderer::GetInstance();
+    auto& renderer = Renderer::GetInstance();
+    // auto& interpreter = Interpreter::GetInstance();
     
     int const canvasX{64};
     int const canvasY{72};
     int const renderScale{3};
-
+    
     renderer.Init(canvasX, canvasY, renderScale);
+
+    // auto renderer = Renderer(canvasX, canvasY, renderScale);
+    auto interpreter = Interpreter();
     
     //Todo: read in rom file
+    // interpreter.LoadGame("LOGO");
+    
+    interpreter.RegisterAppName("LOGO");
 
     bool continueRunning{ true };
-    EmulatorStates emulatorState{ EmulatorStates::Reset };
+    EmulatorStates emulatorState{ EmulatorStates::Step };
     while (continueRunning)
     {
         if (os_GetCSC()) continueRunning = false;
@@ -86,11 +52,17 @@ int main(void)
         {
         case EmulatorStates::Running:
             //Todo: execute X amount of instructions 
+            for (int i = 0; i < 11; i++)
+            {
+                bool waitForVblank = interpreter.EmulateCycle();
+            }
             break;
         case EmulatorStates::Paused:
             break;
         case EmulatorStates::Step:
             //Todo: execute 1 instruction
+            interpreter.EmulateCycle();
+            emulatorState = EmulatorStates::Paused;
             break;
         case EmulatorStates::Reset:
             break;
@@ -98,7 +70,12 @@ int main(void)
             break;
         }
 
-        RenderScreen();
+        // RenderScreen();
+        
+        renderer.ResetBackground();
+
+        renderer.SetPixel(2, 2, true);
+
 
         renderer.SwapBuffer();
     }

@@ -38,3 +38,5 @@ TINYSTL_DIR = thirdparty/tinystl/include
 CXXFLAGS += -I$(TINYSTL_DIR)
 
 EXTRA_HEADERS += $(wildcard $(TINYSTL_DIR)/TINYSTL/*.h)
+
+OPTIMIZE := size
