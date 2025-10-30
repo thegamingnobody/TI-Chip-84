@@ -27,55 +27,62 @@ int main(void)
     auto& renderer = Renderer::GetInstance();
     // auto& interpreter = Interpreter::GetInstance();
     
-    int const canvasX{64};
-    int const canvasY{72};
-    int const renderScale{3};
+    int constexpr canvasX{64};
+    int constexpr canvasY{32 + 40}; // 32 as screen height and 40 to center it vertically
+    int constexpr renderScale{3};
     
     renderer.Init(canvasX, canvasY, renderScale);
 
     // auto renderer = Renderer(canvasX, canvasY, renderScale);
     auto interpreter = Interpreter();
-    
-    //Todo: read in rom file
-    // interpreter.LoadGame("LOGO");
-    
-    interpreter.RegisterAppName("LOGO");
+      
+    interpreter.LoadGame("LOGO");
 
     bool continueRunning{ true };
-    EmulatorStates emulatorState{ EmulatorStates::Step };
+    EmulatorStates emulatorState{ EmulatorStates::Running };
     while (continueRunning)
     {
-        if (os_GetCSC()) continueRunning = false;
+        if (os_GetCSC() == sk_Clear) 
+        {
+            continueRunning = false;
+        }
+        else if (os_GetCSC() == sk_Enter)
+        {
+            emulatorState = EmulatorStates::Step;
+
+            while (os_GetCSC() == sk_Enter);
+        }
         
-        //Todo implement emulator states
         switch (emulatorState)
         {
-        case EmulatorStates::Running:
-            //Todo: execute X amount of instructions 
-            for (int i = 0; i < 11; i++)
-            {
-                bool waitForVblank = interpreter.EmulateCycle();
-            }
-            break;
-        case EmulatorStates::Paused:
-            break;
-        case EmulatorStates::Step:
-            //Todo: execute 1 instruction
-            interpreter.EmulateCycle();
-            emulatorState = EmulatorStates::Paused;
-            break;
-        case EmulatorStates::Reset:
-            break;
-        case EmulatorStates::Loading_Game:
-            break;
-        }
+            case EmulatorStates::Running:
+                //Todo: execute X amount of instructions 
+                for (int i = 0; i < 11; i++)
+                {
+                    bool waitForVblank = interpreter.EmulateCycle();
+                }
+                break;
+            case EmulatorStates::Paused:
+                // gfx_PrintStringXY("Pause", 5, 0);    
+                break;
 
+            case EmulatorStates::Step:
+                interpreter.EmulateCycle();
+                emulatorState = EmulatorStates::Paused;
+                break;
+
+            case EmulatorStates::Reset:
+                break;
+
+            case EmulatorStates::Loading_Game:
+                break;
+        }
+        
         // RenderScreen();
         
-        renderer.ResetBackground();
-
-        renderer.SetPixel(2, 2, true);
-
+        // interpreter.PrintPC();
+        
+        renderer.RenderScreen();
 
         renderer.SwapBuffer();
     }

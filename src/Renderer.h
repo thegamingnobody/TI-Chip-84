@@ -10,6 +10,8 @@ public:
     // Renderer(int canvasX, int canvasY, int renderScale = 1.0f);
     void Init(int canvasX, int canvasY, int renderScale = 1.0f);
 
+    void RenderScreen();
+
     void ResetBackground();
 	void TogglePixel(int x, int y);
 
@@ -19,7 +21,7 @@ public:
     void SwapBuffer();
 
 private:
-    //Todo: store pixels of screen? (tinystl vector?)
+    void RenderPixel(int x, int y);
 
     int CanvasX;
     int CanvasY;
@@ -32,6 +34,6 @@ private:
     uint8_t const m_White{ 0xFF };
 
     //TODO: do I need this? In the original I stored this to be able to render to the texture, but now I don't do that anymore
-	// tinystl::vector<tinystl::vector<bool>> m_Screen;
+	tinystl::vector<tinystl::vector<bool>> m_Screen;
 
 };

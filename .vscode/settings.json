@@ -2,6 +2,7 @@
     "files.associations": {
         "xlocinfo": "cpp",
         "xstring": "cpp",
-        "atomic": "cpp"
+        "atomic": "cpp",
+        "cstddef": "cpp"
     }
 }

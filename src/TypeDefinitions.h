@@ -10,6 +10,7 @@
 #define WINDOW_HEIGHT_BASE 540
 #define VIEWPORT_WIDTH_BASE 64
 #define VIEWPORT_HEIGHT_BASE 32
+#define HEADER_SIZE 22
 
 enum class EmulatorStates
 {

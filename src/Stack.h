@@ -10,7 +10,7 @@ public:
             stack[sp++] = addr;
         } else 
         {
-            // Handle overflow (optional)
+            // Handle overflow
         }
     }
 
@@ -21,7 +21,7 @@ public:
             return stack[--sp];
         } else 
         {
-            // Handle underflow (optional)
+            // Handle underflow
             return 0;
         }
     }
@@ -43,6 +43,6 @@ public:
 private:
     static constexpr int MAX_DEPTH = 16;
     uint16_t stack[MAX_DEPTH];
-    uint8_t sp = 0; // stack pointer
+    uint8_t sp = 0;
 
 };

@@ -13,9 +13,11 @@ public:
     Interpreter();
 	void Init();
 
-    void RegisterAppName(const char* appVarName);
+    void LoadGame(const char* appVarName);
 
 	bool EmulateCycle();
+
+	void PrintPC() const;
 
 private:
 	uint16_t FetchOpcode();
@@ -38,8 +40,10 @@ private:
 	bool Instruction_EXNN(uint16_t baseInstruction);
 	bool Instruction_FXNN(uint16_t baseInstruction);
 
-
 	tinystl::string m_AppVarName;
+
+	//Main memory
+	tinystl::vector<uint8_t> m_Memory{};
 
 	//Registers
 	tinystl::vector<uint8_t> m_V{};
@@ -48,7 +52,7 @@ private:
 	Stack m_Stack{};
 
 	// //Index register
-	// uint16_t m_I{};
+	uint16_t m_I{};
 
 	//Program counter
 	uint16_t m_PC{ PROGRAM_COUNTER_START };
