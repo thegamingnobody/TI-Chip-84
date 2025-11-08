@@ -58,10 +58,10 @@ private:
 	uint16_t m_PC{ PROGRAM_COUNTER_START };
 
 	// //Timers & Stack Pointer
-	// uint8_t m_DelayTimer{};
-	// uint8_t m_SoundTimer{};
+	uint8_t m_DelayTimer{};
+	uint8_t m_SoundTimer{};
 	// uint8_t m_SP{};
 
 	// bool m_DrawFlag{ true };
-	// bool m_WaitForInput{ false };
+	bool m_WaitForInput{ false };
 };

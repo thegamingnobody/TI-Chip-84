@@ -36,7 +36,7 @@ int main(void)
     // auto renderer = Renderer(canvasX, canvasY, renderScale);
     auto interpreter = Interpreter();
       
-    interpreter.LoadGame("LOGO");
+    interpreter.LoadGame("CORAX");
 
     bool continueRunning{ true };
     EmulatorStates emulatorState{ EmulatorStates::Running };
