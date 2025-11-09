@@ -4,6 +4,8 @@
 #include <graphx.h>
 #include "Renderer.h"
 #include <assert.h>
+#include "sys/util.h"
+#include <algorithm>
 
 Interpreter::Interpreter()
 {
@@ -91,22 +93,22 @@ bool Interpreter::EmulateCycle()
         Instruction_8XYN(opcode);
         break;  
     case 0x9:
-        // Instruction_9XY0(opcode);
+        Instruction_9XY0(opcode);
         break;  
     case 0xA:
         Instruction_ANNN(opcode);
         break;  
     case 0xB:
-        // Instruction_BNNN(opcode);
+        Instruction_BNNN(opcode);
         break;  
     case 0xC:
-        // Instruction_CXNN(opcode);
+        Instruction_CXNN(opcode);
         break;  
     case 0xD:
         Instruction_DXYN(opcode);
         break;  
     case 0xE:
-        // Instruction_EXNN(opcode);
+        Instruction_EXNN(opcode);
         break;  
     case 0xF:
         Instruction_FXNN(opcode);
@@ -391,11 +393,72 @@ bool Interpreter::Instruction_8XYN(uint16_t baseInstruction)
 	return true;
 }
 
+bool Interpreter::Instruction_9XY0(uint16_t baseInstruction)
+{
+	//0x9XY0: skip the next instruction if vX is NOT equal to vY
+	uint8_t registerXIndex = (baseInstruction & 0x0F00) >> 8;
+	uint8_t registerYIndex = (baseInstruction & 0x00F0) >> 4;
+	uint8_t subInstruction = (baseInstruction & 0x000F);
+
+	assert(registerXIndex <= 0xF);
+	assert(registerYIndex <= 0xF);
+
+	if (subInstruction != 0x0)
+	{
+		return false;
+	}
+
+	uint8_t XValue = m_V[registerXIndex];
+	uint8_t YValue = m_V[registerYIndex];
+
+	if (XValue != YValue)
+	{
+		m_PC += 2;
+	}
+
+	return true;
+}
+
 bool Interpreter::Instruction_ANNN(uint16_t baseInstruction)
 {
 	uint16_t value = baseInstruction & 0x0FFF;
 	m_I = value;
 
+	return true;
+}
+
+bool Interpreter::Instruction_BNNN(uint16_t baseInstruction)
+{
+	uint16_t jumpValue = (baseInstruction & 0x0FFF);
+	uint8_t xIndex = 0;
+	// bool jumpQuirk = QuirkManager::GetInstance().GetJumpQuirk();
+	bool jumpQuirk = true;
+	if (jumpQuirk)
+	{
+		xIndex = (baseInstruction & 0x0F00) >> 8;
+	}
+
+	uint8_t registerValue = m_V[xIndex];
+	m_PC = jumpValue + registerValue;
+
+	// 1) originally
+	//0xBNNN: jump to address (NNN + value in v0)
+	// 2) later on
+	//0xBXNN: jump to address (XNN + value in vX)
+	return true;
+}
+
+bool Interpreter::Instruction_CXNN(uint16_t baseInstruction)
+{
+	//0xCXNN: 1) generate random number
+	//				2) binary AND random number with NN
+	//				3) store result of binary AND in vX
+	uint8_t registerXIndex = (baseInstruction & 0x0F00) >> 8;
+	uint8_t mask = (baseInstruction & 0x00FF);
+	uint8_t randomNumber{ static_cast<uint8_t>(random() & 0xFF) };
+
+	uint8_t result = randomNumber & mask;
+	m_V[registerXIndex] = result;
 	return true;
 }
 
@@ -449,6 +512,43 @@ bool Interpreter::Instruction_DXYN(uint16_t baseInstruction)
 	// m_DrawFlag = true;
 
 	return true;
+}
+
+bool Interpreter::Instruction_EXNN(uint16_t baseInstruction)
+{
+    //Todo: implement E instruction
+
+	// //0xEX9E: skip next instruction if key corresponding to value in vX is pressed
+	// //0xEXA1: skip next instruction if key corresponding to value in vX is NOT pressed
+	// //valid key values: 0 - F
+	// auto& inputManager = InputManager::GetInstance();
+
+	// uint8_t registerXIndex = (baseInstruction & 0x0F00) >> 8;
+	// uint8_t subInstruction = (baseInstruction & 0x00FF);
+	
+	// assert(registerXIndex <= 0xF);
+
+	// uint8_t XValue = m_V[registerXIndex];
+
+	// switch (subInstruction)
+	// {
+	// case 0xA1:
+	// 	if (not inputManager.IsKeyPressed(XValue))
+	// 	{
+	// 		m_PC += 2;
+	// 	}
+	// 	break;
+	// case 0x9E:
+	// 	if (inputManager.IsKeyPressed(XValue))
+	// 	{
+	// 		m_PC += 2;
+	// 	}
+	// 	break;
+	// default:
+	// 	break;
+	// }
+
+	// return true;
 }
 
 bool Interpreter::Instruction_FXNN(uint16_t baseInstruction)

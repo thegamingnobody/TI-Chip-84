@@ -19,10 +19,42 @@
 #include "Renderer.h"
 #include "TypeDefinitions.h"
 #include "Interpreter.h"
+#include "GameLoader.h"
+#include <TINYSTL/string.h>
 
 int main(void)
 {
     gfx_Begin();
+    
+    auto& gameLoader = GameLoader::GetInstance();
+    
+    gameLoader.ListChip8Games();
+    
+    //Todo: add game selection
+
+    tinystl::string gameName;
+    bool gameSelected{false};
+    while(os_GetCSC() != sk_Clear && !gameSelected)
+    {
+        if (os_GetCSC() == sk_Enter)
+        {
+            gameName = gameLoader.GetSelectedGameName();
+            gameSelected = true;
+        }
+        else if (os_GetCSC() == sk_Down)
+        {
+            gameLoader.ChangeCursorIndex(1);
+        }
+        else if (os_GetCSC() == sk_Up)
+        {
+            gameLoader.ChangeCursorIndex(-1);
+        }
+        
+        
+    }
+
+    gfx_SetColor(0xFF);    
+    gfx_FillScreen(0xFF);
 
     auto& renderer = Renderer::GetInstance();
     // auto& interpreter = Interpreter::GetInstance();
@@ -36,7 +68,12 @@ int main(void)
     // auto renderer = Renderer(canvasX, canvasY, renderScale);
     auto interpreter = Interpreter();
       
-    interpreter.LoadGame("CORAX");
+    interpreter.LoadGame(gameName.c_str());
+
+    // interpreter.LoadGame("LOGO");
+    // interpreter.LoadGame("CORAX");
+    // interpreter.LoadGame("FLAGS");
+    // interpreter.LoadGame("QUIRKS");
 
     bool continueRunning{ true };
     EmulatorStates emulatorState{ EmulatorStates::Running };
