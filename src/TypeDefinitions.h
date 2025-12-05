@@ -12,6 +12,8 @@
 #define VIEWPORT_HEIGHT_BASE 32
 #define HEADER_SIZE 22
 
+#define DEBUG_PRINTS
+
 enum class EmulatorStates
 {
     Running,

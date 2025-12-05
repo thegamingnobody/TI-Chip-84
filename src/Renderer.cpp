@@ -37,6 +37,7 @@ void Renderer::RenderScreen()
 
 void Renderer::ResetBackground()
 {
+    // gfx_FillScreen(m_White);
     gfx_SetColor(m_Black);
     gfx_FillRectangle(CanvasX, CanvasY, CanvasWidthBase * RenderScale, CanvasHeightBase * RenderScale);
 }

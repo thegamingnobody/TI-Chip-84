@@ -6,6 +6,9 @@
 #include <assert.h>
 #include "sys/util.h"
 #include <algorithm>
+#include "InputManager.h"
+#include "TypeDefinitions.h"
+#include <debug.h>
 
 Interpreter::Interpreter()
 {
@@ -55,15 +58,18 @@ bool Interpreter::EmulateCycle()
     uint16_t opcode = FetchOpcode();
 
     // if not waiting for input
-	// timer.IncrementCycleCounter();
-	m_PC += 2;
-
-    // gfx_PrintInt(m_PC, 2);
+	if (!m_WaitForInput)
+	{
+		// timer.IncrementCycleCounter();
+		m_PC += 2;
+	}
 
     //Decode opcode
-   	uint8_t instructionType = (opcode & 0xF000) >> 12;
+   	uint16_t instructionType = (opcode & 0xF000) >> 8 >> 4;
+	
+	m_CurrentOpcode = opcode;
 
-    switch (instructionType)
+	switch (instructionType)
     {
     case 0x0:
         Instruction_0NNN(opcode);
@@ -120,12 +126,51 @@ bool Interpreter::EmulateCycle()
     return true;    
 }
 
-void Interpreter::PrintPC() const
+void Interpreter::PrintPC()
 {
     gfx_FillScreen(0xFF);
-    gfx_SetTextXY(0, 0);
-    gfx_PrintInt(m_PC, 4);
+
+	// for (int i = 0; i < static_cast<int>(m_V.size()); i++)
+	// {
+	// 	int y{(i / 4)};
+	// 	int x{(i - y * 4)};
+
+	// 	gfx_SetTextXY(200 + x * 30, y*10);
+	// 	gfx_PrintInt(m_V[i], 3);
+	// }
+
+    gfx_SetTextXY(0, 10);
+    gfx_PrintInt(m_DelayTimer, 4);
+
+	// dbg_ClearConsole();
+	// dbg_printf("0x%d: %d\n", m_PC, m_CurrentOpcode);
+	
+	char test[5];
+	dbg_sprintf(test, "%02X", (unsigned char)(m_PC >> 8));
+	dbg_printf("%s", test);
+    dbg_sprintf(test, "%02X", (unsigned char)m_PC);
+	dbg_printf("%s", test);
+
+	dbg_sprintf(test, "%02X", (unsigned char)(m_CurrentOpcode >> 8));
+	dbg_printf(": %s", test);
+    dbg_sprintf(test, "%02X", (unsigned char)m_CurrentOpcode);
+	dbg_printf("%s", test);
+
+	dbg_printf("\n");
 }
+
+void Interpreter::UpdateTimers()
+{
+	if (m_DelayTimer > 0)
+	{
+		m_DelayTimer--;
+	}
+	if (m_SoundTimer > 0)
+	{
+		m_SoundTimer--;
+	}
+}
+
 
 uint16_t Interpreter::FetchOpcode()
 {
@@ -248,7 +293,7 @@ bool Interpreter::Instruction_7XNN(uint16_t baseInstruction)
 {
 	int registerIndex = (baseInstruction & 0x0F00) >> 8;
 	uint8_t value = baseInstruction & 0x00FF;
-	m_V[registerIndex] += value;
+	m_V[registerIndex] = (m_V[registerIndex] + value) & 0xFF;
 
 	return true;
 }
@@ -273,8 +318,8 @@ bool Interpreter::Instruction_8XYN(uint16_t baseInstruction)
 	uint8_t registerYIndex = (baseInstruction & 0x00F0) >> 4;
 	uint8_t subInstruction = (baseInstruction & 0x000F);
 
-	assert(registerXIndex <= 0xF);
-	assert(registerYIndex <= 0xF);
+	// assert(registerXIndex <= 0xF);
+	// assert(registerYIndex <= 0xF);
 
 	uint8_t XValue = m_V[registerXIndex];
 	uint8_t YValue = m_V[registerYIndex];
@@ -339,7 +384,7 @@ bool Interpreter::Instruction_8XYN(uint16_t baseInstruction)
 	case 0x6:
 		{
 			// bool shiftQuirk = Chip8::QuirkManager::GetInstance().GetShiftQuirk();
-			bool shiftQuirk = true;
+			bool shiftQuirk = false;
 
 			if (!shiftQuirk)
 			{
@@ -371,7 +416,7 @@ bool Interpreter::Instruction_8XYN(uint16_t baseInstruction)
 	case 0xE:
 		{
 			// bool shiftQuirk = Chip8::QuirkManager::GetInstance().GetShiftQuirk();
-			bool shiftQuirk = true;
+			bool shiftQuirk = false;
 
 			if (!shiftQuirk)
 			{
@@ -432,7 +477,7 @@ bool Interpreter::Instruction_BNNN(uint16_t baseInstruction)
 	uint16_t jumpValue = (baseInstruction & 0x0FFF);
 	uint8_t xIndex = 0;
 	// bool jumpQuirk = QuirkManager::GetInstance().GetJumpQuirk();
-	bool jumpQuirk = true;
+	bool jumpQuirk = false;
 	if (jumpQuirk)
 	{
 		xIndex = (baseInstruction & 0x0F00) >> 8;
@@ -466,7 +511,7 @@ bool Interpreter::Instruction_DXYN(uint16_t baseInstruction)
 {
 	auto& renderer = Renderer::GetInstance();
 	// bool wrapQuirk = Chip8::QuirkManager::GetInstance().GetWrapQuirk();
-	bool wrapQuirk = true;
+	bool wrapQuirk = false;
 
 	int xIndex = (baseInstruction & 0x0F00) >> 8;
 	int yIndex = (baseInstruction & 0x00F0) >> 4;
@@ -516,45 +561,45 @@ bool Interpreter::Instruction_DXYN(uint16_t baseInstruction)
 
 bool Interpreter::Instruction_EXNN(uint16_t baseInstruction)
 {
-    //Todo: implement E instruction
+    // Todo: implement E instruction
 
-	// //0xEX9E: skip next instruction if key corresponding to value in vX is pressed
-	// //0xEXA1: skip next instruction if key corresponding to value in vX is NOT pressed
-	// //valid key values: 0 - F
-	// auto& inputManager = InputManager::GetInstance();
+	//0xEX9E: skip next instruction if key corresponding to value in vX is pressed
+	//0xEXA1: skip next instruction if key corresponding to value in vX is NOT pressed
+	//valid key values: 0 - F
+	auto& inputManager = InputManager::GetInstance();
 
-	// uint8_t registerXIndex = (baseInstruction & 0x0F00) >> 8;
-	// uint8_t subInstruction = (baseInstruction & 0x00FF);
+	uint8_t registerXIndex = (baseInstruction & 0x0F00) >> 8;
+	uint8_t subInstruction = (baseInstruction & 0x00FF);
 	
-	// assert(registerXIndex <= 0xF);
+	assert(registerXIndex <= 0xF);
 
-	// uint8_t XValue = m_V[registerXIndex];
+	uint8_t XValue = m_V[registerXIndex] & 0xF;
 
-	// switch (subInstruction)
-	// {
-	// case 0xA1:
-	// 	if (not inputManager.IsKeyPressed(XValue))
-	// 	{
-	// 		m_PC += 2;
-	// 	}
-	// 	break;
-	// case 0x9E:
-	// 	if (inputManager.IsKeyPressed(XValue))
-	// 	{
-	// 		m_PC += 2;
-	// 	}
-	// 	break;
-	// default:
-	// 	break;
-	// }
+	switch (subInstruction)
+	{
+	case 0xA1:
+		if (!inputManager.IsKeyPressed(XValue))
+		{
+			m_PC += 2;
+		}
+		break;
+	case 0x9E:
+		if (inputManager.IsKeyPressed(XValue))
+		{
+			m_PC += 2;
+		}
+		break;
+	default:
+		break;
+	}
 
-	// return true;
+	return true;
 }
 
 bool Interpreter::Instruction_FXNN(uint16_t baseInstruction)
 {
 	// auto& logger = Logger::GetInstance();
-	// auto& inputManager = InputManager::GetInstance();
+	auto& inputManager = InputManager::GetInstance();
 
 	uint8_t registerXIndex = (baseInstruction & 0x0F00) >> 8;
 	uint8_t subInstruction = (baseInstruction & 0x00FF);
@@ -571,7 +616,7 @@ bool Interpreter::Instruction_FXNN(uint16_t baseInstruction)
 		break;
 	case 0x15:
 		//0xFX15: delay timer is set to vX
-		m_DelayTimer = XValue;
+		m_DelayTimer = m_V[registerXIndex];
 		break;
 	case 0x18:
 		//0xFX18: sound timer is set to vX
@@ -588,29 +633,29 @@ bool Interpreter::Instruction_FXNN(uint16_t baseInstruction)
 		// //			on OG machine, key is registered upon release of key
 		
 		// //Check if already in wating mode
-		// if (!m_WaitForInput)
-		// {
-		// 	m_PC -= 2;
-		// 	m_WaitForInput = true;
-		// 	return true;
-		// }
+		if (!m_WaitForInput)
+		{
+			m_PC -= 2;
+			m_WaitForInput = true;
+			return true;
+		}
 		
 		// //Check if any key is being pressed
-		// if (inputManager.isKeyReleasedThisFrame())
-		// {
-		// 	m_WaitForInput = false;
-		// 	for (int key = 0; key < inputManager.GetNumberOfKeys(); key++)
-		// 	{
-		// 		//set value of pressed key in vX
-		// 		//Todo: Set value of released key in vX
-		// 		if (inputManager.IsKeyReleased(key))
-		// 		{
-		// 			m_V[registerXIndex] = static_cast<uint8_t>(key & 0xFF);
-		// 			m_PC += 2;
-		// 			return true;
-		// 		}
-		// 	}
-		// }
+		if (inputManager.isKeyReleasedThisFrame())
+		{
+			m_WaitForInput = false;
+			for (int key = 0; key < inputManager.GetNumberOfKeys(); key++)
+			{
+				//set value of pressed key in vX
+				//Todo: Set value of released key in vX
+				if (inputManager.IsKeyReleased(key))
+				{
+					m_V[registerXIndex] = static_cast<uint8_t>(key & 0xFF);
+					m_PC += 2;
+					return true;
+				}
+			}
+		}
 		break;
 	case 0x29:
 		//0xFX29: set index register to address of character 
@@ -633,8 +678,8 @@ bool Interpreter::Instruction_FXNN(uint16_t baseInstruction)
 			//0xFX55: store values of registers v0 to vX (inclusive) sequeltially starting at address in index register,	example: I will be v0, I + 1 will be v1, I + 2 will be v2 etc.
 			// bool loadStoreQuirkIncrement = QuirkManager::GetInstance().GetLoadStoreQuirkIncrement();
 			// bool loadStoreQuirkUnchanged = QuirkManager::GetInstance().GetLoadStoreQuirkUnchanged();
-			bool loadStoreQuirkIncrement = true;
-			bool loadStoreQuirkUnchanged = true;
+			bool loadStoreQuirkIncrement = false;
+			bool loadStoreQuirkUnchanged = false;
 
 			for (int i = 0; i <= registerXIndex; i++)
 			{
@@ -662,8 +707,8 @@ bool Interpreter::Instruction_FXNN(uint16_t baseInstruction)
 			//0xFX65: reverse of 0xFX55, stores values from I to I + X in v0 t vX. congif: does I increment or does it use a temp value
 			// bool loadStoreQuirkIncrement = QuirkManager::GetInstance().GetLoadStoreQuirkIncrement();
 			// bool loadStoreQuirkUnchanged = QuirkManager::GetInstance().GetLoadStoreQuirkUnchanged();
-			bool loadStoreQuirkIncrement = true;
-			bool loadStoreQuirkUnchanged = true;
+			bool loadStoreQuirkIncrement = false;
+			bool loadStoreQuirkUnchanged = false;
 		
 			for (int i = 0; i <= registerXIndex; i++)
 			{

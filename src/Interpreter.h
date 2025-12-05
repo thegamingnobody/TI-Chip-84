@@ -17,7 +17,9 @@ public:
 
 	bool EmulateCycle();
 
-	void PrintPC() const;
+	void PrintPC();
+
+	void UpdateTimers();
 
 private:
 	uint16_t FetchOpcode();
@@ -64,4 +66,6 @@ private:
 
 	// bool m_DrawFlag{ true };
 	bool m_WaitForInput{ false };
+
+	uint16_t m_CurrentOpcode{};
 };
