@@ -9,6 +9,7 @@
 #include "InputManager.h"
 #include "TypeDefinitions.h"
 #include <debug.h>
+#include "QuirkManager.h"
 
 Interpreter::Interpreter()
 {
@@ -142,9 +143,6 @@ void Interpreter::PrintPC()
     gfx_SetTextXY(0, 10);
     gfx_PrintInt(m_DelayTimer, 4);
 
-	// dbg_ClearConsole();
-	// dbg_printf("0x%d: %d\n", m_PC, m_CurrentOpcode);
-	
 	char test[5];
 	dbg_sprintf(test, "%02X", (unsigned char)(m_PC >> 8));
 	dbg_printf("%s", test);
@@ -170,7 +168,6 @@ void Interpreter::UpdateTimers()
 		m_SoundTimer--;
 	}
 }
-
 
 uint16_t Interpreter::FetchOpcode()
 {
@@ -224,7 +221,7 @@ bool Interpreter::Instruction_3XNN(uint16_t baseInstruction)
 	uint8_t registerIndex = (baseInstruction & 0x0F00) >> 8;
 	uint8_t value = (baseInstruction & 0x00FF);
 
-	assert(registerIndex <= 0xF);
+	// assert(registerIndex <= 0xF);
 
 	uint8_t registerValue = m_V[registerIndex];
 
@@ -242,7 +239,7 @@ bool Interpreter::Instruction_4XNN(uint16_t baseInstruction)
 	uint8_t registerIndex = (baseInstruction & 0x0F00) >> 8;
 	uint8_t value = (baseInstruction & 0x00FF);
 
-	assert(registerIndex <= 0xF);
+	// assert(registerIndex <= 0xF);
 
 	uint8_t registerValue = m_V[registerIndex];
 
@@ -261,8 +258,8 @@ bool Interpreter::Instruction_5XY0(uint16_t baseInstruction)
 	uint8_t registerYIndex = (baseInstruction & 0x00F0) >> 4;
 	uint8_t subInstruction = (baseInstruction & 0x000F);
 
-	assert(registerXIndex <= 0xF);
-	assert(registerYIndex <= 0xF);
+	// assert(registerXIndex <= 0xF);
+	// assert(registerYIndex <= 0xF);
 
 	if (subInstruction != 0x0)
 	{
@@ -324,8 +321,7 @@ bool Interpreter::Instruction_8XYN(uint16_t baseInstruction)
 	uint8_t XValue = m_V[registerXIndex];
 	uint8_t YValue = m_V[registerYIndex];
 
-	// bool vFResetQuirk = QuirkManager::GetInstance().GetVfResetQuirk();
-	bool vFResetQuirk = true;
+	bool vFResetQuirk = QuirkManager::GetInstance().GetVfResetQuirk();
 
 	switch (subInstruction)
 	{
@@ -383,8 +379,7 @@ bool Interpreter::Instruction_8XYN(uint16_t baseInstruction)
 		break;
 	case 0x6:
 		{
-			// bool shiftQuirk = Chip8::QuirkManager::GetInstance().GetShiftQuirk();
-			bool shiftQuirk = false;
+			bool shiftQuirk = QuirkManager::GetInstance().GetShiftQuirk();
 
 			if (!shiftQuirk)
 			{
@@ -415,8 +410,7 @@ bool Interpreter::Instruction_8XYN(uint16_t baseInstruction)
 		break;
 	case 0xE:
 		{
-			// bool shiftQuirk = Chip8::QuirkManager::GetInstance().GetShiftQuirk();
-			bool shiftQuirk = false;
+			bool shiftQuirk = QuirkManager::GetInstance().GetShiftQuirk();
 
 			if (!shiftQuirk)
 			{
@@ -445,8 +439,8 @@ bool Interpreter::Instruction_9XY0(uint16_t baseInstruction)
 	uint8_t registerYIndex = (baseInstruction & 0x00F0) >> 4;
 	uint8_t subInstruction = (baseInstruction & 0x000F);
 
-	assert(registerXIndex <= 0xF);
-	assert(registerYIndex <= 0xF);
+	// assert(registerXIndex <= 0xF);
+	// assert(registerYIndex <= 0xF);
 
 	if (subInstruction != 0x0)
 	{
@@ -476,8 +470,7 @@ bool Interpreter::Instruction_BNNN(uint16_t baseInstruction)
 {
 	uint16_t jumpValue = (baseInstruction & 0x0FFF);
 	uint8_t xIndex = 0;
-	// bool jumpQuirk = QuirkManager::GetInstance().GetJumpQuirk();
-	bool jumpQuirk = false;
+	bool jumpQuirk = QuirkManager::GetInstance().GetJumpQuirk();
 	if (jumpQuirk)
 	{
 		xIndex = (baseInstruction & 0x0F00) >> 8;
@@ -510,8 +503,7 @@ bool Interpreter::Instruction_CXNN(uint16_t baseInstruction)
 bool Interpreter::Instruction_DXYN(uint16_t baseInstruction)
 {
 	auto& renderer = Renderer::GetInstance();
-	// bool wrapQuirk = Chip8::QuirkManager::GetInstance().GetWrapQuirk();
-	bool wrapQuirk = true;
+	bool wrapQuirk = QuirkManager::GetInstance().GetWrapQuirk();
 
 	int xIndex = (baseInstruction & 0x0F00) >> 8;
 	int yIndex = (baseInstruction & 0x00F0) >> 4;
@@ -570,7 +562,7 @@ bool Interpreter::Instruction_EXNN(uint16_t baseInstruction)
 	uint8_t registerXIndex = (baseInstruction & 0x0F00) >> 8;
 	uint8_t subInstruction = (baseInstruction & 0x00FF);
 	
-	assert(registerXIndex <= 0xF);
+	// assert(registerXIndex <= 0xF);
 
 	uint8_t XValue = m_V[registerXIndex] & 0xF;
 
@@ -603,7 +595,7 @@ bool Interpreter::Instruction_FXNN(uint16_t baseInstruction)
 	uint8_t registerXIndex = (baseInstruction & 0x0F00) >> 8;
 	uint8_t subInstruction = (baseInstruction & 0x00FF);
 
-	assert(registerXIndex <= 0xF);
+	// assert(registerXIndex <= 0xF);
 
 	uint8_t XValue = m_V[registerXIndex];
 
@@ -675,10 +667,8 @@ bool Interpreter::Instruction_FXNN(uint16_t baseInstruction)
 	case 0x55:
 		{
 			//0xFX55: store values of registers v0 to vX (inclusive) sequeltially starting at address in index register,	example: I will be v0, I + 1 will be v1, I + 2 will be v2 etc.
-			// bool loadStoreQuirkIncrement = QuirkManager::GetInstance().GetLoadStoreQuirkIncrement();
-			// bool loadStoreQuirkUnchanged = QuirkManager::GetInstance().GetLoadStoreQuirkUnchanged();
-			bool loadStoreQuirkIncrement = false;
-			bool loadStoreQuirkUnchanged = false;
+			bool loadStoreQuirkIncrement = QuirkManager::GetInstance().GetLoadStoreQuirkIncrement();
+			bool loadStoreQuirkUnchanged = QuirkManager::GetInstance().GetLoadStoreQuirkUnchanged();
 
 			for (int i = 0; i <= registerXIndex; i++)
 			{
@@ -704,10 +694,8 @@ bool Interpreter::Instruction_FXNN(uint16_t baseInstruction)
 	case 0x65:
 		{
 			//0xFX65: reverse of 0xFX55, stores values from I to I + X in v0 t vX. congif: does I increment or does it use a temp value
-			// bool loadStoreQuirkIncrement = QuirkManager::GetInstance().GetLoadStoreQuirkIncrement();
-			// bool loadStoreQuirkUnchanged = QuirkManager::GetInstance().GetLoadStoreQuirkUnchanged();
-			bool loadStoreQuirkIncrement = false;
-			bool loadStoreQuirkUnchanged = false;
+			bool loadStoreQuirkIncrement = QuirkManager::GetInstance().GetLoadStoreQuirkIncrement();
+			bool loadStoreQuirkUnchanged = QuirkManager::GetInstance().GetLoadStoreQuirkUnchanged();
 		
 			for (int i = 0; i <= registerXIndex; i++)
 			{
