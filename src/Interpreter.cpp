@@ -186,7 +186,7 @@ bool Interpreter::Instruction_0NNN(uint16_t baseInstruction)
 	switch (instructionParam)
 	{
 	case 0x00E0:
-		Renderer::GetInstance().ResetBackground();
+		Renderer::GetInstance().FillScreen(false);
 		// m_DrawFlag = true;
 		break;
 	case 0x00EE:
@@ -511,7 +511,7 @@ bool Interpreter::Instruction_DXYN(uint16_t baseInstruction)
 {
 	auto& renderer = Renderer::GetInstance();
 	// bool wrapQuirk = Chip8::QuirkManager::GetInstance().GetWrapQuirk();
-	bool wrapQuirk = false;
+	bool wrapQuirk = true;
 
 	int xIndex = (baseInstruction & 0x0F00) >> 8;
 	int yIndex = (baseInstruction & 0x00F0) >> 4;
@@ -540,8 +540,7 @@ bool Interpreter::Instruction_DXYN(uint16_t baseInstruction)
 			{
 				pixelX = pixelX % VIEWPORT_WIDTH_BASE;
 			}
-			else if (pixelY >= VIEWPORT_HEIGHT_BASE || pixelX >= VIEWPORT_WIDTH_BASE)
-				continue;
+			else if (pixelY >= VIEWPORT_HEIGHT_BASE || pixelX >= VIEWPORT_WIDTH_BASE) continue;
 
 			if (spriteRow & (0x80 >> pixel))
 			{

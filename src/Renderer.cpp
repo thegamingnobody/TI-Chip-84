@@ -1,5 +1,6 @@
 #include "Renderer.h"
 #include <graphx.h>
+#include <debug.h>
 
 // Renderer::Renderer(int canvasX, int canvasY, int renderScale)
 // {
@@ -15,7 +16,7 @@ void Renderer::Init(int canvasX, int canvasY, int renderScale)
 	m_Screen.resize(VIEWPORT_HEIGHT_BASE);
 	for (int row = 0; row < VIEWPORT_HEIGHT_BASE; row++)
 	{
-		m_Screen[row].resize(VIEWPORT_WIDTH_BASE);
+		m_Screen[row].resize(VIEWPORT_WIDTH_BASE, false);
 	}
 }
 
@@ -37,8 +38,7 @@ void Renderer::RenderScreen()
 
 void Renderer::ResetBackground()
 {
-    // gfx_FillScreen(m_White);
-    gfx_SetColor(m_Black);
+	gfx_SetColor(m_Black);
     gfx_FillRectangle(CanvasX, CanvasY, CanvasWidthBase * RenderScale, CanvasHeightBase * RenderScale);
 }
 
@@ -67,4 +67,23 @@ void Renderer::RenderPixel(int x, int y)
 {
     gfx_SetColor(m_White);    
     gfx_FillRectangle(CanvasX + (x * RenderScale), CanvasY + (y * RenderScale), RenderScale, RenderScale);
+}
+
+void Renderer::FillScreen(bool fillValue)
+{
+	// m_Screen.resize(VIEWPORT_HEIGHT_BASE, tinystl::vector<bool>(VIEWPORT_WIDTH_BASE, fillValue));
+
+	// for (int row = 0; row < VIEWPORT_HEIGHT_BASE; row++)
+	// {
+	// 	m_Screen[row].resize(VIEWPORT_WIDTH_BASE, fillValue);
+	// }
+
+	for (int row = 0; row < VIEWPORT_HEIGHT_BASE; row++)
+	{
+		for (int col = 0; col < VIEWPORT_WIDTH_BASE; col++)
+		{
+			m_Screen[row][col] = fillValue;
+		}
+	}
+
 }

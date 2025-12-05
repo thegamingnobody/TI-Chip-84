@@ -62,6 +62,9 @@ int main(void)
             for (int i = 0; i < 11; i++)
             {
                 /*bool waitForVblank = */ interpreter.EmulateCycle();
+                #ifdef DEBUG_PRINTS
+                interpreter.PrintPC();
+                #endif
             }
             break;
         case EmulatorStates::Paused:
@@ -81,9 +84,6 @@ int main(void)
 
         interpreter.UpdateTimers();
         
-        #ifdef DEBUG_PRINTS
-        interpreter.PrintPC();
-        #endif
 
         renderer.RenderScreen();
         

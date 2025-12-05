@@ -20,8 +20,10 @@ public:
 
     void SwapBuffer();
 
+    void FillScreen(bool fillValue);
 private:
     void RenderPixel(int x, int y);
+
 
     int CanvasX;
     int CanvasY;
