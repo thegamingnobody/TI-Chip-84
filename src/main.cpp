@@ -1,3 +1,5 @@
+//-std=c++17
+
 /*
  *--------------------------------------
  * Program Name:
@@ -22,6 +24,7 @@
 #include "GameLoader.h"
 #include <TINYSTL/string.h>
 #include "InputManager.h"
+#include "TimeManager.h"
 
 tinystl::string HandleGameChoice();
 
@@ -40,54 +43,58 @@ int main(void)
     
     auto& renderer = Renderer::GetInstance();
     auto& inputManager = InputManager::GetInstance();
+    auto& timeManager = TimeManager::GetInstance();
     
     renderer.Init(canvasX, canvasY, renderScale);
     inputManager.Init();
+    timeManager.Init();
     // auto renderer = Renderer(canvasX, canvasY, renderScale);
     auto interpreter = Interpreter();
       
     interpreter.LoadGame(gameName.c_str());
 
+    timeManager.SetTimer();
+    
+    float instructionsToExecute{ 0.0f };
+    float timerUpdates{ 0.0f };
     bool continueRunning{ true };
-    // EmulatorStates emulatorState{ EmulatorStates::Paused };
-    EmulatorStates emulatorState{ EmulatorStates::Running };
     while (continueRunning)
     {     
         continueRunning = inputManager.ProcessInput();
         
-        switch (emulatorState)
+        timeManager.UpdateTime(false);
+        float deltaTime = timeManager.GetDeltaTime();
+
+        instructionsToExecute += deltaTime * timeManager.GetTargetIPF() * timeManager.GetTargetFPS(); //I per frame * FPS -> Istructions per second
+        timerUpdates += deltaTime * timeManager.GetTargetFPS();
+
+        while (instructionsToExecute >= 1.0f)
         {
-        case EmulatorStates::Running:
-            //Todo: execute X amount of instructions 
-            for (int i = 0; i < 11; i++)
-            {
-                /*bool waitForVblank = */ interpreter.EmulateCycle();
-                #ifdef DEBUG_PRINTS
-                interpreter.PrintPC();
-                #endif
-            }
-            break;
-        case EmulatorStates::Paused:
-            break;
-            
-        case EmulatorStates::Step:
-            interpreter.EmulateCycle();
-            emulatorState = EmulatorStates::Paused;
-            break;
-            
-        case EmulatorStates::Reset:
-            break;
-            
-        case EmulatorStates::Loading_Game:
-            break;
+            /*bool waitForVblank = */ interpreter.EmulateCycle();
+            timeManager.IncrementCycleCounter();
+            instructionsToExecute -= 1.0f;
+
+            #ifdef DEBUG_PRINTS
+            interpreter.PrintPC();
+            #endif                
         }
 
-        interpreter.UpdateTimers();
+        while (timerUpdates >= 1.0f)
+        {
+            interpreter.UpdateTimers();
+            timerUpdates -= 1.0f;
+        }
         
+        if (interpreter.GetDrawFlag())
+        {
+            interpreter.ResetDrawFlag();
+            renderer.RenderScreen();
+            renderer.SwapBuffer();
+        }
+        
+        timeManager.IncrementFrameCounter();
 
-        renderer.RenderScreen();
-        
-        renderer.SwapBuffer();
+        timeManager.LimitFrameRate();
     }
    
     inputManager.Destroy();

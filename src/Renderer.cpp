@@ -1,6 +1,5 @@
 #include "Renderer.h"
 #include <graphx.h>
-#include <debug.h>
 
 // Renderer::Renderer(int canvasX, int canvasY, int renderScale)
 // {

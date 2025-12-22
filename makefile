@@ -36,6 +36,7 @@ TINYSTL_DIR = thirdparty/tinystl/include
 
 # Add to C++ compiler flags:
 CXXFLAGS += -I$(TINYSTL_DIR)
+CXXFLAGS += -std=c++17
 
 EXTRA_HEADERS += $(wildcard $(TINYSTL_DIR)/TINYSTL/*.h)
 

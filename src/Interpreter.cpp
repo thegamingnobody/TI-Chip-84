@@ -143,6 +143,8 @@ void Interpreter::PrintPC()
     gfx_SetTextXY(0, 10);
     gfx_PrintInt(m_DelayTimer, 4);
 
+	m_DrawFlag = true;
+
 	char test[5];
 	dbg_sprintf(test, "%02X", (unsigned char)(m_PC >> 8));
 	dbg_printf("%s", test);
@@ -169,6 +171,16 @@ void Interpreter::UpdateTimers()
 	}
 }
 
+bool Interpreter::GetDrawFlag() const
+{
+	return m_DrawFlag;
+}
+
+void Interpreter::ResetDrawFlag()
+{
+	m_DrawFlag = false;
+}
+
 uint16_t Interpreter::FetchOpcode()
 {
     uint16_t result = (m_Memory[m_PC] << 8) | m_Memory[m_PC+1];
@@ -184,7 +196,7 @@ bool Interpreter::Instruction_0NNN(uint16_t baseInstruction)
 	{
 	case 0x00E0:
 		Renderer::GetInstance().FillScreen(false);
-		// m_DrawFlag = true;
+		m_DrawFlag = true;
 		break;
 	case 0x00EE:
 		m_PC = m_Stack.top();
@@ -321,7 +333,7 @@ bool Interpreter::Instruction_8XYN(uint16_t baseInstruction)
 	uint8_t XValue = m_V[registerXIndex];
 	uint8_t YValue = m_V[registerYIndex];
 
-	bool vFResetQuirk = QuirkManager::GetInstance().GetVfResetQuirk();
+	bool vFResetQuirk = !QuirkManager::GetInstance().GetVfResetQuirk();
 
 	switch (subInstruction)
 	{
@@ -532,7 +544,7 @@ bool Interpreter::Instruction_DXYN(uint16_t baseInstruction)
 			{
 				pixelX = pixelX % VIEWPORT_WIDTH_BASE;
 			}
-			else if (pixelY >= VIEWPORT_HEIGHT_BASE || pixelX >= VIEWPORT_WIDTH_BASE) continue;
+			else if (pixelY >= VIEWPORT_HEIGHT_BASE or pixelX >= VIEWPORT_WIDTH_BASE) continue;
 
 			if (spriteRow & (0x80 >> pixel))
 			{
@@ -545,7 +557,7 @@ bool Interpreter::Instruction_DXYN(uint16_t baseInstruction)
 		}
 	}
 
-	// m_DrawFlag = true;
+	m_DrawFlag = true;
 
 	return true;
 }

@@ -21,6 +21,9 @@ public:
 
 	void UpdateTimers();
 
+	bool GetDrawFlag() const;
+	void ResetDrawFlag();
+
 private:
 	uint16_t FetchOpcode();
 
@@ -64,7 +67,7 @@ private:
 	uint8_t m_SoundTimer{};
 	// uint8_t m_SP{};
 
-	// bool m_DrawFlag{ true };
+	bool m_DrawFlag{ true };
 	bool m_WaitForInput{ false };
 
 	uint16_t m_CurrentOpcode{};
