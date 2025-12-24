@@ -23,8 +23,7 @@ public:
     void FillScreen(bool fillValue);
 private:
     void RenderPixel(int x, int y);
-
-
+    
     int CanvasX;
     int CanvasY;
     int RenderScale;
@@ -37,5 +36,4 @@ private:
 
     //TODO: do I need this? In the original I stored this to be able to render to the texture, but now I don't do that anymore
 	tinystl::vector<tinystl::vector<bool>> m_Screen;
-
 };

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Singleton.h"
 #include "TypeDefinitions.h"
 #include <TINYSTL/vector.h>
 #include <TINYSTL/string.h>
@@ -17,15 +16,13 @@ public:
 
 	bool EmulateCycle();
 
-	void PrintPC();
-
 	void UpdateTimers();
 
 	bool GetDrawFlag() const;
 	void ResetDrawFlag();
 
 private:
-	uint16_t FetchOpcode();
+	uint16_t FetchOpcode() const;
 
 	//Instruction functions
 	bool Instruction_0NNN(uint16_t baseInstruction);

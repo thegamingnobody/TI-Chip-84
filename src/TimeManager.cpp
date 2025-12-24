@@ -2,6 +2,17 @@
 #include "TimeManager.h"
 #include <debug.h>
 
+TimeManager::TimeManager() 
+	: m_TargetIPF(11)
+	, m_TargetFPS(60)
+	, m_CyclesExecuted(0)
+	, m_FrameUpdateCount(0)
+{
+	timer_SetReload(2, m_ClocksPerSecond);
+	m_LastTime = clock();
+	m_CurrentTime = clock();
+}
+
 void TimeManager::Init()
 {
 	// m_DeltaTime = 0.0f;

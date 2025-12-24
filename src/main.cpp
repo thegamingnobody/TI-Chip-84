@@ -43,7 +43,8 @@ int main(void)
     
     auto& renderer = Renderer::GetInstance();
     auto& inputManager = InputManager::GetInstance();
-    auto& timeManager = TimeManager::GetInstance();
+    // auto& timeManager = TimeManager::GetInstance();
+    auto timeManager = TimeManager();
     
     renderer.Init(canvasX, canvasY, renderScale);
     inputManager.Init();
@@ -72,11 +73,7 @@ int main(void)
         {
             /*bool waitForVblank = */ interpreter.EmulateCycle();
             timeManager.IncrementCycleCounter();
-            instructionsToExecute -= 1.0f;
-
-            #ifdef DEBUG_PRINTS
-            interpreter.PrintPC();
-            #endif                
+            instructionsToExecute -= 1.0f;            
         }
 
         while (timerUpdates >= 1.0f)
@@ -106,7 +103,7 @@ int main(void)
 
 tinystl::string HandleGameChoice()
 {
-    auto& gameLoader = GameLoader::GetInstance();
+    auto gameLoader = GameLoader();
     
     gameLoader.ListChip8Games();
     

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Singleton.h"
 #include "TypeDefinitions.h"
 #include <TINYSTL/vector.h>
 #include <TINYSTL/string.h>
 
-class GameLoader : public Singleton<GameLoader>
+class GameLoader
 {
 public:
+  GameLoader();
     void ListChip8Games();
   	bool IsChip8Game(const char* appVarName);
 

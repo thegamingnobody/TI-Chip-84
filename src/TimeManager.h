@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Singleton.h"
 #include <sys/timers.h>
 #include <ctime>
 
 
-class TimeManager: public Singleton<TimeManager>
+class TimeManager
 {
 public:
+    TimeManager();
     void Init();
 
     void SetTimer();

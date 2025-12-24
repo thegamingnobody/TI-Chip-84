@@ -5,6 +5,11 @@
 #include <fileioc.h>
 #include <graphx.h>
 
+GameLoader::GameLoader()
+{
+    
+}
+
 void GameLoader::ListChip8Games()
 {
     void* vat_ptr = NULL;

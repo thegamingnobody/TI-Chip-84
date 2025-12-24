@@ -31,7 +31,6 @@ void Interpreter::LoadGame(const char* appVarName)
     handle = ti_OpenVar(m_AppVarName.c_str(), "r", OS_TYPE_APPVAR);
     if (!handle) 
     {
-        // gfx_PrintStringXY("AppVar not found", 0, 0);
         return;
     }
 
@@ -56,7 +55,7 @@ void Interpreter::LoadGame(const char* appVarName)
 bool Interpreter::EmulateCycle()
 {
     //Fetch opcode
-    uint16_t opcode = FetchOpcode();
+    uint16_t const opcode = FetchOpcode();
 
     // if not waiting for input
 	if (!m_WaitForInput)
@@ -66,7 +65,7 @@ bool Interpreter::EmulateCycle()
 	}
 
     //Decode opcode
-   	uint16_t instructionType = (opcode & 0xF000) >> 8 >> 4;
+   	uint16_t const instructionType = (opcode & 0xF000) >> 8 >> 4;
 	
 	m_CurrentOpcode = opcode;
 
@@ -127,38 +126,6 @@ bool Interpreter::EmulateCycle()
     return true;    
 }
 
-void Interpreter::PrintPC()
-{
-    gfx_FillScreen(0xFF);
-
-	// for (int i = 0; i < static_cast<int>(m_V.size()); i++)
-	// {
-	// 	int y{(i / 4)};
-	// 	int x{(i - y * 4)};
-
-	// 	gfx_SetTextXY(200 + x * 30, y*10);
-	// 	gfx_PrintInt(m_V[i], 3);
-	// }
-
-    gfx_SetTextXY(0, 10);
-    gfx_PrintInt(m_DelayTimer, 4);
-
-	m_DrawFlag = true;
-
-	char test[5];
-	dbg_sprintf(test, "%02X", (unsigned char)(m_PC >> 8));
-	dbg_printf("%s", test);
-    dbg_sprintf(test, "%02X", (unsigned char)m_PC);
-	dbg_printf("%s", test);
-
-	dbg_sprintf(test, "%02X", (unsigned char)(m_CurrentOpcode >> 8));
-	dbg_printf(": %s", test);
-    dbg_sprintf(test, "%02X", (unsigned char)m_CurrentOpcode);
-	dbg_printf("%s", test);
-
-	dbg_printf("\n");
-}
-
 void Interpreter::UpdateTimers()
 {
 	if (m_DelayTimer > 0)
@@ -181,16 +148,16 @@ void Interpreter::ResetDrawFlag()
 	m_DrawFlag = false;
 }
 
-uint16_t Interpreter::FetchOpcode()
+uint16_t Interpreter::FetchOpcode() const
 {
-    uint16_t result = (m_Memory[m_PC] << 8) | m_Memory[m_PC+1];
+    uint16_t const result = (m_Memory[m_PC] << 8) | m_Memory[m_PC+1];
     return result;
 }
 
 bool Interpreter::Instruction_0NNN(uint16_t baseInstruction)
 {
 	//0x00EE: Return from subroutine
-	uint16_t instructionParam = (baseInstruction & 0x0FFF);
+	uint16_t const instructionParam = (baseInstruction & 0x0FFF);
 
 	switch (instructionParam)
 	{
@@ -218,7 +185,7 @@ bool Interpreter::Instruction_1NNN(uint16_t baseInstruction)
 bool Interpreter::Instruction_2NNN(uint16_t baseInstruction)
 {
 	//0x2NNN: Subroutine call. Jump to address NNN
-	uint16_t value = baseInstruction & 0xFFF;
+	uint16_t const value = baseInstruction & 0xFFF;
 
 	m_Stack.push(m_PC);
 
@@ -230,12 +197,10 @@ bool Interpreter::Instruction_2NNN(uint16_t baseInstruction)
 bool Interpreter::Instruction_3XNN(uint16_t baseInstruction)
 {
 	//0x3XNN: skip the next instruction if vX is equal to NN
-	uint8_t registerIndex = (baseInstruction & 0x0F00) >> 8;
-	uint8_t value = (baseInstruction & 0x00FF);
+	uint8_t const registerIndex = (baseInstruction & 0x0F00) >> 8;
+	uint8_t const value = (baseInstruction & 0x00FF);
 
-	// assert(registerIndex <= 0xF);
-
-	uint8_t registerValue = m_V[registerIndex];
+	uint8_t const registerValue = m_V[registerIndex];
 
 	if (registerValue == value)
 	{
@@ -248,12 +213,10 @@ bool Interpreter::Instruction_3XNN(uint16_t baseInstruction)
 bool Interpreter::Instruction_4XNN(uint16_t baseInstruction)
 {
 	//0x4XNN: skip the next instruction if vX is NOT equal to NN
-	uint8_t registerIndex = (baseInstruction & 0x0F00) >> 8;
-	uint8_t value = (baseInstruction & 0x00FF);
+	uint8_t const registerIndex = (baseInstruction & 0x0F00) >> 8;
+	uint8_t const value = (baseInstruction & 0x00FF);
 
-	// assert(registerIndex <= 0xF);
-
-	uint8_t registerValue = m_V[registerIndex];
+	uint8_t const registerValue = m_V[registerIndex];
 
 	if (registerValue != value)
 	{
@@ -266,20 +229,17 @@ bool Interpreter::Instruction_4XNN(uint16_t baseInstruction)
 bool Interpreter::Instruction_5XY0(uint16_t baseInstruction)
 {
 	//0x5XY0: skip the next instruction if vX is equal to vY
-	uint8_t registerXIndex = (baseInstruction & 0x0F00) >> 8;
-	uint8_t registerYIndex = (baseInstruction & 0x00F0) >> 4;
-	uint8_t subInstruction = (baseInstruction & 0x000F);
-
-	// assert(registerXIndex <= 0xF);
-	// assert(registerYIndex <= 0xF);
+	uint8_t const registerXIndex = (baseInstruction & 0x0F00) >> 8;
+	uint8_t const registerYIndex = (baseInstruction & 0x00F0) >> 4;
+	uint8_t const subInstruction = (baseInstruction & 0x000F);
 
 	if (subInstruction != 0x0)
 	{
 		return false;
 	}
 
-	uint8_t XValue = m_V[registerXIndex];
-	uint8_t YValue = m_V[registerYIndex];
+	uint8_t const XValue = m_V[registerXIndex];
+	uint8_t const YValue = m_V[registerYIndex];
 
 	if (XValue == YValue)
 	{
@@ -291,8 +251,8 @@ bool Interpreter::Instruction_5XY0(uint16_t baseInstruction)
 
 bool Interpreter::Instruction_6XNN(uint16_t baseInstruction)
 {
-	int registerIndex = (baseInstruction & 0x0F00) >> 8;
-	uint8_t value = baseInstruction & 0x00FF;
+	int const registerIndex = (baseInstruction & 0x0F00) >> 8;
+	uint8_t const value = baseInstruction & 0x00FF;
 	m_V[registerIndex] = value;
 
 	return true;
@@ -300,8 +260,8 @@ bool Interpreter::Instruction_6XNN(uint16_t baseInstruction)
 
 bool Interpreter::Instruction_7XNN(uint16_t baseInstruction)
 {
-	int registerIndex = (baseInstruction & 0x0F00) >> 8;
-	uint8_t value = baseInstruction & 0x00FF;
+	int const registerIndex = (baseInstruction & 0x0F00) >> 8;
+	uint8_t const value = baseInstruction & 0x00FF;
 	m_V[registerIndex] = (m_V[registerIndex] + value) & 0xFF;
 
 	return true;
@@ -323,17 +283,14 @@ bool Interpreter::Instruction_8XYN(uint16_t baseInstruction)
 	//			- 0x8XYE: 1) (configurable) vX is set to vY 
 	//					  2) shift vY one bit to the left
 	//					  3) set vF to to the value of the bit that was shifted out
-	uint8_t registerXIndex = (baseInstruction & 0x0F00) >> 8;
-	uint8_t registerYIndex = (baseInstruction & 0x00F0) >> 4;
-	uint8_t subInstruction = (baseInstruction & 0x000F);
-
-	// assert(registerXIndex <= 0xF);
-	// assert(registerYIndex <= 0xF);
+	uint8_t const registerXIndex = (baseInstruction & 0x0F00) >> 8;
+	uint8_t const registerYIndex = (baseInstruction & 0x00F0) >> 4;
+	uint8_t const subInstruction = (baseInstruction & 0x000F);
 
 	uint8_t XValue = m_V[registerXIndex];
 	uint8_t YValue = m_V[registerYIndex];
 
-	bool vFResetQuirk = !QuirkManager::GetInstance().GetVfResetQuirk();
+	bool const vFResetQuirk = !QuirkManager::GetInstance().GetVfResetQuirk();
 
 	switch (subInstruction)
 	{
@@ -447,20 +404,17 @@ bool Interpreter::Instruction_8XYN(uint16_t baseInstruction)
 bool Interpreter::Instruction_9XY0(uint16_t baseInstruction)
 {
 	//0x9XY0: skip the next instruction if vX is NOT equal to vY
-	uint8_t registerXIndex = (baseInstruction & 0x0F00) >> 8;
-	uint8_t registerYIndex = (baseInstruction & 0x00F0) >> 4;
-	uint8_t subInstruction = (baseInstruction & 0x000F);
-
-	// assert(registerXIndex <= 0xF);
-	// assert(registerYIndex <= 0xF);
+	uint8_t const registerXIndex = (baseInstruction & 0x0F00) >> 8;
+	uint8_t const registerYIndex = (baseInstruction & 0x00F0) >> 4;
+	uint8_t const subInstruction = (baseInstruction & 0x000F);
 
 	if (subInstruction != 0x0)
 	{
 		return false;
 	}
 
-	uint8_t XValue = m_V[registerXIndex];
-	uint8_t YValue = m_V[registerYIndex];
+	uint8_t const XValue = m_V[registerXIndex];
+	uint8_t const YValue = m_V[registerYIndex];
 
 	if (XValue != YValue)
 	{
@@ -472,7 +426,7 @@ bool Interpreter::Instruction_9XY0(uint16_t baseInstruction)
 
 bool Interpreter::Instruction_ANNN(uint16_t baseInstruction)
 {
-	uint16_t value = baseInstruction & 0x0FFF;
+	uint16_t const value = baseInstruction & 0x0FFF;
 	m_I = value;
 
 	return true;
@@ -480,9 +434,9 @@ bool Interpreter::Instruction_ANNN(uint16_t baseInstruction)
 
 bool Interpreter::Instruction_BNNN(uint16_t baseInstruction)
 {
-	uint16_t jumpValue = (baseInstruction & 0x0FFF);
+	uint16_t const jumpValue = (baseInstruction & 0x0FFF);
 	uint8_t xIndex = 0;
-	bool jumpQuirk = QuirkManager::GetInstance().GetJumpQuirk();
+	bool const jumpQuirk = QuirkManager::GetInstance().GetJumpQuirk();
 	if (jumpQuirk)
 	{
 		xIndex = (baseInstruction & 0x0F00) >> 8;
@@ -503,11 +457,11 @@ bool Interpreter::Instruction_CXNN(uint16_t baseInstruction)
 	//0xCXNN: 1) generate random number
 	//				2) binary AND random number with NN
 	//				3) store result of binary AND in vX
-	uint8_t registerXIndex = (baseInstruction & 0x0F00) >> 8;
-	uint8_t mask = (baseInstruction & 0x00FF);
-	uint8_t randomNumber{ static_cast<uint8_t>(random() & 0xFF) };
+	uint8_t const registerXIndex = (baseInstruction & 0x0F00) >> 8;
+	uint8_t const mask = (baseInstruction & 0x00FF);
+	uint8_t const randomNumber{ static_cast<uint8_t>(random() & 0xFF) };
 
-	uint8_t result = randomNumber & mask;
+	uint8_t const result = randomNumber & mask;
 	m_V[registerXIndex] = result;
 	return true;
 }
@@ -515,14 +469,14 @@ bool Interpreter::Instruction_CXNN(uint16_t baseInstruction)
 bool Interpreter::Instruction_DXYN(uint16_t baseInstruction)
 {
 	auto& renderer = Renderer::GetInstance();
-	bool wrapQuirk = QuirkManager::GetInstance().GetWrapQuirk();
+	bool const wrapQuirk = QuirkManager::GetInstance().GetWrapQuirk();
 
-	int xIndex = (baseInstruction & 0x0F00) >> 8;
-	int yIndex = (baseInstruction & 0x00F0) >> 4;
-	int height = (baseInstruction & 0x000F);
+	int const xIndex = (baseInstruction & 0x0F00) >> 8;
+	int const yIndex = (baseInstruction & 0x00F0) >> 4;
+	int const height = (baseInstruction & 0x000F);
 
-	uint8_t baseCoordX = m_V[xIndex] % VIEWPORT_WIDTH_BASE;
-	uint8_t baseCoordY = m_V[yIndex] % VIEWPORT_HEIGHT_BASE;
+	uint8_t const baseCoordX = m_V[xIndex] % VIEWPORT_WIDTH_BASE;
+	uint8_t const baseCoordY = m_V[yIndex] % VIEWPORT_HEIGHT_BASE;
 	m_V[0xF] = 0;
 
 	for (int row = 0; row < height; row++)
@@ -571,12 +525,10 @@ bool Interpreter::Instruction_EXNN(uint16_t baseInstruction)
 	//valid key values: 0 - F
 	auto& inputManager = InputManager::GetInstance();
 
-	uint8_t registerXIndex = (baseInstruction & 0x0F00) >> 8;
-	uint8_t subInstruction = (baseInstruction & 0x00FF);
+	uint8_t const registerXIndex = (baseInstruction & 0x0F00) >> 8;
+	uint8_t const subInstruction = (baseInstruction & 0x00FF);
 	
-	// assert(registerXIndex <= 0xF);
-
-	uint8_t XValue = m_V[registerXIndex] & 0xF;
+	uint8_t const XValue = m_V[registerXIndex] & 0xF;
 
 	switch (subInstruction)
 	{
@@ -601,15 +553,12 @@ bool Interpreter::Instruction_EXNN(uint16_t baseInstruction)
 
 bool Interpreter::Instruction_FXNN(uint16_t baseInstruction)
 {
-	// auto& logger = Logger::GetInstance();
 	auto& inputManager = InputManager::GetInstance();
 
-	uint8_t registerXIndex = (baseInstruction & 0x0F00) >> 8;
-	uint8_t subInstruction = (baseInstruction & 0x00FF);
+	uint8_t const registerXIndex = (baseInstruction & 0x0F00) >> 8;
+	uint8_t const subInstruction = (baseInstruction & 0x00FF);
 
-	// assert(registerXIndex <= 0xF);
-
-	uint8_t XValue = m_V[registerXIndex];
+	uint8_t const XValue = m_V[registerXIndex];
 
 	switch (subInstruction)
 	{

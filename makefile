@@ -6,7 +6,7 @@
 # ----------------------------
 
 NAME        ?= CHIP84
-COMPRESSED  ?= NO
+COMPRESSED  ?= YES
 ICON        ?= icon.png
 DESCRIPTION ?= "chip84"
 ARCHIVED    ?= YES
@@ -39,5 +39,3 @@ CXXFLAGS += -I$(TINYSTL_DIR)
 CXXFLAGS += -std=c++17
 
 EXTRA_HEADERS += $(wildcard $(TINYSTL_DIR)/TINYSTL/*.h)
-
-OPTIMIZE := size
