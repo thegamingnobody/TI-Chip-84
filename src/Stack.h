@@ -1,14 +1,21 @@
 #pragma once
+#include <TINYSTL/vector.h>
 
 class Stack
 {
 public:
+    Stack()
+    {
+        stack.resize(MAX_DEPTH);
+    }
+
     void push(uint16_t addr) 
     {
         if (sp < MAX_DEPTH) 
         {
             stack[sp++] = addr;
-        } else 
+        } 
+        else 
         {
             // Handle overflow
         }
@@ -19,7 +26,8 @@ public:
         if (sp > 0) 
         {
             return stack[--sp];
-        } else 
+        } 
+        else 
         {
             // Handle underflow
             return 0;
@@ -42,7 +50,7 @@ public:
 
 private:
     static constexpr int MAX_DEPTH = 16;
-    uint16_t stack[MAX_DEPTH];
+    tinystl::vector<uint16_t> stack;
     uint8_t sp = 0;
 
 };

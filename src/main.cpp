@@ -30,8 +30,8 @@ tinystl::string HandleGameChoice();
 
 int main(void)
 {
-    int constexpr canvasX{64};
-    int constexpr canvasY{32 + 40}; // 32 as screen height and 40 to center it vertically
+    int constexpr canvasX{VIEWPORT_WIDTH_BASE};
+    int constexpr canvasY{VIEWPORT_HEIGHT_BASE + 40}; // 32 as screen height and 40 to center it vertically
     int constexpr renderScale{3};
 
     gfx_Begin();
