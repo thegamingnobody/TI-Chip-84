@@ -19,8 +19,10 @@ public:
 	void UpdateTimers();
 
 	bool GetDrawFlag() const;
-	void ResetDrawFlag();
+	void SetDrawFlag(bool newValue);
 
+	bool GetRequestDrawFlag() const;
+	void SetRequestDrawFlag(bool newValue);
 private:
 	uint16_t FetchOpcode() const;
 
@@ -65,6 +67,7 @@ private:
 	// uint8_t m_SP{};
 
 	bool m_DrawFlag{ true };
+	bool m_DrawRequest{ true };
 	bool m_WaitForInput{ false };
 
 	uint16_t m_CurrentOpcode{};

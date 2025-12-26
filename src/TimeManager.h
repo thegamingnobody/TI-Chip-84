@@ -27,6 +27,8 @@ public:
 
     float GetDeltaTime() const { return m_DeltaTime; }
 
+    void StartFrame();
+
     void LimitFrameRate();
 
 private:
@@ -39,6 +41,7 @@ private:
 
     clock_t m_LastTime;
     clock_t m_CurrentTime;
+    clock_t m_StartFrameTime;
     int m_CyclesExecuted;
     int m_FrameUpdateCount;
     double m_AverageCyclesPerSecond;

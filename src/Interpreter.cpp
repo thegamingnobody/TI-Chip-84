@@ -142,10 +142,18 @@ bool Interpreter::GetDrawFlag() const
 {
 	return m_DrawFlag;
 }
-
-void Interpreter::ResetDrawFlag()
+void Interpreter::SetDrawFlag(bool newValue)
 {
-	m_DrawFlag = false;
+	m_DrawFlag = newValue;
+}
+
+bool Interpreter::GetRequestDrawFlag() const
+{
+	return m_DrawRequest;
+}
+void Interpreter::SetRequestDrawFlag(bool newValue)
+{
+	m_DrawRequest = newValue;
 }
 
 uint16_t Interpreter::FetchOpcode() const
@@ -163,7 +171,7 @@ bool Interpreter::Instruction_0NNN(uint16_t baseInstruction)
 	{
 	case 0x00E0:
 		Renderer::GetInstance().FillScreen(false);
-		m_DrawFlag = true;
+		m_DrawRequest = true;
 		break;
 	case 0x00EE:
 		m_PC = m_Stack.top();
@@ -511,7 +519,7 @@ bool Interpreter::Instruction_DXYN(uint16_t baseInstruction)
 		}
 	}
 
-	m_DrawFlag = true;
+	m_DrawRequest = true;
 
 	return true;
 }

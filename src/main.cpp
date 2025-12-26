@@ -61,21 +61,23 @@ int main(void)
     bool continueRunning{ true };
     while (continueRunning)
     {     
+        timeManager.StartFrame();
+        
         continueRunning = inputManager.ProcessInput();
         
         timeManager.UpdateTime(false);
         float deltaTime = timeManager.GetDeltaTime();
-
+        
         instructionsToExecute += deltaTime * timeManager.GetTargetIPF() * timeManager.GetTargetFPS(); //I per frame * FPS -> Istructions per second
         timerUpdates += deltaTime * timeManager.GetTargetFPS();
-
+        
         while (instructionsToExecute >= 1.0f)
         {
             /*bool waitForVblank = */ interpreter.EmulateCycle();
             timeManager.IncrementCycleCounter();
             instructionsToExecute -= 1.0f;            
         }
-
+        
         while (timerUpdates >= 1.0f)
         {
             interpreter.UpdateTimers();
@@ -84,14 +86,22 @@ int main(void)
         
         if (interpreter.GetDrawFlag())
         {
-            interpreter.ResetDrawFlag();
+            interpreter.SetDrawFlag(false);
             renderer.RenderScreen();
             renderer.SwapBuffer();
         }
         
         timeManager.IncrementFrameCounter();
+        
 
         timeManager.LimitFrameRate();
+
+        if (interpreter.GetRequestDrawFlag())
+        {
+            interpreter.SetRequestDrawFlag(false);
+            interpreter.SetDrawFlag(true);
+        }
+        
     }
    
     inputManager.Destroy();
