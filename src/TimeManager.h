@@ -45,6 +45,4 @@ private:
     double m_AverageFramesPerSecond{15};
 
     uint16_t const m_ClocksPerSecond{ 0x8000 };
-
-    // std::chrono::milliseconds m_SleepTime;
 };

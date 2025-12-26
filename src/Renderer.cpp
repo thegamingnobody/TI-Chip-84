@@ -11,7 +11,7 @@ void Renderer::Init(int canvasX, int canvasY, int renderScale)
     CanvasX = canvasX;
     CanvasY = canvasY;
     RenderScale = renderScale;
-    
+	
 	m_Screen.resize(VIEWPORT_HEIGHT_BASE);
 	for (int row = 0; row < VIEWPORT_HEIGHT_BASE; row++)
 	{
@@ -33,12 +33,13 @@ void Renderer::RenderScreen()
 		}
 	}
 
+	// gfx_Sprite_NoClip(canvas, CanvasX, CanvasY);
 }
 
 void Renderer::ResetBackground()
 {
 	gfx_SetColor(m_Black);
-    gfx_FillRectangle(CanvasX, CanvasY, CanvasWidthBase * RenderScale, CanvasHeightBase * RenderScale);
+    gfx_FillRectangle(CanvasX, CanvasY, VIEWPORT_WIDTH_BASE * RenderScale, VIEWPORT_HEIGHT_BASE * RenderScale);
 }
 
 void Renderer::TogglePixel(int x, int y)
@@ -54,11 +55,13 @@ void Renderer::SwapBuffer()
 
 void Renderer::SetPixel(int x, int y, bool isEnabled)
 {
+    // m_Screen[(y * VIEWPORT_WIDTH_BASE) + x] = (isEnabled ? 1 : 0);
     m_Screen[y][x] = isEnabled;
 }
 
 bool Renderer::IsPixelOn(int x, int y) const
 {
+   	// return m_Screen[(y * VIEWPORT_WIDTH_BASE) + x];
    	return m_Screen[y][x];
 }
 
@@ -70,11 +73,9 @@ void Renderer::RenderPixel(int x, int y)
 
 void Renderer::FillScreen(bool fillValue)
 {
-	// m_Screen.resize(VIEWPORT_HEIGHT_BASE, tinystl::vector<bool>(VIEWPORT_WIDTH_BASE, fillValue));
-
-	// for (int row = 0; row < VIEWPORT_HEIGHT_BASE; row++)
+	// for (int pixel = 0; pixel < VIEWPORT_HEIGHT_BASE * VIEWPORT_WIDTH_BASE; pixel++)
 	// {
-	// 	m_Screen[row].resize(VIEWPORT_WIDTH_BASE, fillValue);
+	// 	m_Screen[pixel] = fillValue;
 	// }
 
 	for (int row = 0; row < VIEWPORT_HEIGHT_BASE; row++)
@@ -84,5 +85,4 @@ void Renderer::FillScreen(bool fillValue)
 			m_Screen[row][col] = fillValue;
 		}
 	}
-
 }

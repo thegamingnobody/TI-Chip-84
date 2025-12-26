@@ -4,6 +4,8 @@
 #include "TypeDefinitions.h"
 #include <TINYSTL/vector.h>
 
+// #define canvas ((gfx_sprite_t*)m_Screen)
+
 class Renderer : public Singleton<Renderer>
 {
 public:
@@ -23,17 +25,17 @@ public:
     void FillScreen(bool fillValue);
 private:
     void RenderPixel(int x, int y);
-    
+
+
     int CanvasX;
     int CanvasY;
     int RenderScale;
 
-    int const CanvasWidthBase{ 64 };
-    int const CanvasHeightBase{ 32 };
-
     uint8_t const m_Black{ 0x00 };
     uint8_t const m_White{ 0xFF };
 
-    //TODO: do I need this? In the original I stored this to be able to render to the texture, but now I don't do that anymore
-	tinystl::vector<tinystl::vector<bool>> m_Screen;
+	tinystl::vector<tinystl::vector<uint8_t>> m_Screen;
+
+    // uint8_t m_Screen[2048]{};
+
 };
