@@ -62,7 +62,12 @@ int main(void)
     while (continueRunning)
     {     
         timeManager.StartFrame();
-        
+
+        if (interpreter.GetRequestDrawFlag())
+        {
+            interpreter.SetRequestDrawFlag(false);
+            interpreter.SetDrawFlag(true);
+        }
         continueRunning = inputManager.ProcessInput();
         
         timeManager.UpdateTime(false);
@@ -93,15 +98,7 @@ int main(void)
         
         timeManager.IncrementFrameCounter();
         
-
-        timeManager.LimitFrameRate();
-
-        if (interpreter.GetRequestDrawFlag())
-        {
-            interpreter.SetRequestDrawFlag(false);
-            interpreter.SetDrawFlag(true);
-        }
-        
+        timeManager.LimitFrameRate();   
     }
    
     inputManager.Destroy();

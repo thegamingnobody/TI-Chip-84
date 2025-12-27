@@ -49,20 +49,20 @@ void TimeManager::UpdateTime(bool isGamePaused)
 		//reset the interrupt
 		timer_AckInterrupt(2, TIMER_RELOADED);
 
-		m_AverageCyclesPerSecond = (m_CyclesExecuted);
-		m_AverageFramesPerSecond = (m_FrameUpdateCount);
+		// m_AverageCyclesPerSecond = (m_CyclesExecuted);
+		// m_AverageFramesPerSecond = (m_FrameUpdateCount);
 
-		// m_AverageCyclesPerSecond += (m_CyclesExecuted);
-		// m_AverageFramesPerSecond += (m_FrameUpdateCount);
-		// m_AverageCyclesPerSecond /= 2;
-		// m_AverageFramesPerSecond /= 2;
+		m_AverageCyclesPerSecond += (m_CyclesExecuted);
+		m_AverageFramesPerSecond += (m_FrameUpdateCount);
+		m_AverageCyclesPerSecond /= 2;
+		m_AverageFramesPerSecond /= 2;
 
 		m_CyclesExecuted = 0;
 		m_FrameUpdateCount = 0;
 
-		// dbg_printf("  FPS: %f\n", m_AverageFramesPerSecond);
-		// dbg_printf("Cycle: %f\n", m_AverageCyclesPerSecond);
-		// dbg_printf("*---------*\n");
+		dbg_printf("  FPS: %f\n", m_AverageFramesPerSecond);
+		dbg_printf("Cycle: %f\n", m_AverageCyclesPerSecond);
+		dbg_printf("*---------*\n");
 	}
 	
 }
@@ -71,19 +71,34 @@ void TimeManager::UpdateTime(bool isGamePaused)
 void TimeManager::LimitFrameRate()
 {
 	float targetSecondsPerFrame = (1.0f / m_TargetFPS);
-
-	float frameTime = ((clock() - m_StartFrameTime) / CLOCKS_PER_SEC);
-
-	float remaining = targetSecondsPerFrame - frameTime;
 	
+	bool continueStalling{true};
+	float frameTime{};
+	float remaining{};
+	uint16_t msToDelay{};
+	while (continueStalling)
+	{
+		frameTime = ((float)(clock() - m_StartFrameTime)) / CLOCKS_PER_SEC;
+	
+		remaining = targetSecondsPerFrame - frameTime;
+		
+		if (remaining <= 0.0f)
+		{
+			continueStalling = false;
+		}
+
+		msToDelay = static_cast<uint16_t>(remaining * 1000);
+		if (msToDelay < 1)
+		{
+			continueStalling = false;
+		}
+	}
+
 	// dbg_printf("  targetFrameTime: %f\n", targetSecondsPerFrame);
 	// dbg_printf("        frameTime: %f\n", frameTime);
 	// dbg_printf("        remaining: %f\n", remaining);
+	// dbg_printf("        msToDelay: %d\n", msToDelay);
 	// dbg_printf("*-------------------*\n");
-	
-    if (remaining <= 0.0f) return;
-	
-    delay(remaining);
 }
 
 void TimeManager::StartFrame()
