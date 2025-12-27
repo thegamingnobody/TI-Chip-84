@@ -13,6 +13,11 @@ void Renderer::Init(int canvasX, int canvasY, int renderScale)
     RenderScale = renderScale;
 	
 	m_Screen = gfx_MallocSprite(64, 32);
+	FillScreen(false);
+}
+
+void Renderer::Destroy()
+{
 }
 
 void Renderer::RenderScreen()

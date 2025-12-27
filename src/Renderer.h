@@ -10,6 +10,7 @@ class Renderer : public Singleton<Renderer>
 public:
     // Renderer(int canvasX, int canvasY, int renderScale = 1.0f);
     void Init(int canvasX, int canvasY, int renderScale = 1.0f);
+    void Destroy();
 
     void RenderScreen();
 

@@ -60,9 +60,9 @@ void TimeManager::UpdateTime(bool isGamePaused)
 		m_CyclesExecuted = 0;
 		m_FrameUpdateCount = 0;
 
-		dbg_printf("  FPS: %f\n", m_AverageFramesPerSecond);
-		dbg_printf("Cycle: %f\n", m_AverageCyclesPerSecond);
-		dbg_printf("*---------*\n");
+		// dbg_printf("  FPS: %f\n", m_AverageFramesPerSecond);
+		// dbg_printf("Cycle: %f\n", m_AverageCyclesPerSecond);
+		// dbg_printf("*---------*\n");
 	}
 	
 }
