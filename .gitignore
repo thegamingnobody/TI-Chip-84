@@ -1,5 +1,7 @@
 bin
 obj
 romconverter
+Screenshots
+.vscode
 
 *.ch8
