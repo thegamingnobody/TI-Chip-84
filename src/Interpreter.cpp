@@ -54,6 +54,8 @@ void Interpreter::LoadGame(const char* appVarName)
 
 bool Interpreter::EmulateCycle()
 {
+	bool waitForVblank = false;
+
     //Fetch opcode
     uint16_t const opcode = FetchOpcode();
 
@@ -112,6 +114,10 @@ bool Interpreter::EmulateCycle()
         break;  
     case 0xD:
         Instruction_DXYN(opcode);
+		if (m_DrawRequest and QuirkManager::GetInstance().GetVblankQuirk())
+		{
+			waitForVblank = true;
+		}
         break;  
     case 0xE:
         Instruction_EXNN(opcode);
@@ -123,7 +129,7 @@ bool Interpreter::EmulateCycle()
         break;
     }
 
-    return true;    
+    return waitForVblank;    
 }
 
 void Interpreter::UpdateTimers()
@@ -298,7 +304,7 @@ bool Interpreter::Instruction_8XYN(uint16_t baseInstruction)
 	uint8_t XValue = m_V[registerXIndex];
 	uint8_t YValue = m_V[registerYIndex];
 
-	bool const vFResetQuirk = !QuirkManager::GetInstance().GetVfResetQuirk();
+	bool const vFResetQuirk = QuirkManager::GetInstance().GetVfResetQuirk();
 
 	switch (subInstruction)
 	{

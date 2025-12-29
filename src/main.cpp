@@ -25,6 +25,8 @@
 #include <TINYSTL/string.h>
 #include "InputManager.h"
 #include "TimeManager.h"
+#include <debug.h>
+#include "QuirkManager.h"
 
 tinystl::string HandleGameChoice();
 
@@ -43,13 +45,14 @@ int main(void)
     
     auto& renderer = Renderer::GetInstance();
     auto& inputManager = InputManager::GetInstance();
+    auto& quirkManager = QuirkManager::GetInstance();
     // auto& timeManager = TimeManager::GetInstance();
     auto timeManager = TimeManager();
     
     renderer.Init(canvasX, canvasY, renderScale);
     inputManager.Init();
     timeManager.Init();
-    // auto renderer = Renderer(canvasX, canvasY, renderScale);
+    quirkManager.Init();
     auto interpreter = Interpreter();
       
     interpreter.LoadGame(gameName.c_str());
@@ -63,32 +66,42 @@ int main(void)
     {     
         timeManager.StartFrame();
 
+        // Check for draw request
         if (interpreter.GetRequestDrawFlag())
         {
             interpreter.SetRequestDrawFlag(false);
             interpreter.SetDrawFlag(true);
         }
+
         continueRunning = inputManager.ProcessInput();
         
+        // Update time and calculate how many instructions to execute
         timeManager.UpdateTime(false);
         float deltaTime = timeManager.GetDeltaTime();
         
         instructionsToExecute += deltaTime * timeManager.GetTargetIPF() * timeManager.GetTargetFPS(); //I per frame * FPS -> Istructions per second
         timerUpdates += deltaTime * timeManager.GetTargetFPS();
         
+        // Execute instructions
         while (instructionsToExecute >= 1.0f)
         {
-            /*bool waitForVblank = */ interpreter.EmulateCycle();
+            bool waitForVblank = interpreter.EmulateCycle();
             timeManager.IncrementCycleCounter();
-            instructionsToExecute -= 1.0f;            
+            instructionsToExecute -= 1.0f;       
+            if (waitForVblank)
+            {
+                instructionsToExecute -= static_cast<int>(instructionsToExecute); //will leave only the part after the decimal
+            }     
         }
         
+        // Update timers
         while (timerUpdates >= 1.0f)
         {
             interpreter.UpdateTimers();
             timerUpdates -= 1.0f;
         }
         
+        // Render if draw flag is set
         if (interpreter.GetDrawFlag())
         {
             interpreter.SetDrawFlag(false);

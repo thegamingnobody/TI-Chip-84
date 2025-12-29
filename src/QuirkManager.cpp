@@ -8,6 +8,6 @@ void QuirkManager::Init()
     m_Quirks.loadStoreQuirkUnchanged = false;
     m_Quirks.wrapQuirk = false;
     m_Quirks.jumpQuirk = false;
-    m_Quirks.vblankQuirk = false;
+    m_Quirks.vblankQuirk = true;
     m_Quirks.vFResetQuirk = true;
 }
