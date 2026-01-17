@@ -27,9 +27,10 @@ public:
 
     float GetDeltaTime() const { return m_DeltaTime; }
 
-    void StartFrame();
-
     void LimitFrameRate();
+
+    float CalculateInstructionToExecute() const;
+    float CalculateTimerUpdates() const;
 
 private:
     float m_DeltaTime{0.0f};
@@ -41,11 +42,11 @@ private:
 
     clock_t m_LastTime;
     clock_t m_CurrentTime;
-    clock_t m_StartFrameTime;
     int m_CyclesExecuted;
     int m_FrameUpdateCount;
     double m_AverageCyclesPerSecond;
     double m_AverageFramesPerSecond{15};
 
     uint16_t const m_ClocksPerSecond{ 0x8000 };
+    int m_AmountOfTimerInterrupts{0};
 };

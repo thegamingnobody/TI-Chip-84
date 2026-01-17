@@ -29,6 +29,10 @@
 #include "QuirkManager.h"
 
 tinystl::string HandleGameChoice();
+void ExecuteInstructions(Interpreter& interpreter, TimeManager& timeManager, float& amountOfInstructionsToExecute);
+void UpdateTimers(Interpreter& interpreter, float& amountOfUpdates);
+void TryRender(Interpreter& interpreter);
+void EndFrame(TimeManager& timeManager);
 
 int main(void)
 {
@@ -46,7 +50,6 @@ int main(void)
     auto& renderer = Renderer::GetInstance();
     auto& inputManager = InputManager::GetInstance();
     auto& quirkManager = QuirkManager::GetInstance();
-    // auto& timeManager = TimeManager::GetInstance();
     auto timeManager = TimeManager();
     
     renderer.Init(canvasX, canvasY, renderScale);
@@ -59,61 +62,25 @@ int main(void)
 
     timeManager.SetTimer();
     
-    float instructionsToExecute{ 0.0f };
-    float timerUpdates{ 0.0f };
+    float timerUpdates{0};
+    float instructionToExecute{0};
     bool continueRunning{ true };
-    while (continueRunning)
-    {     
-        timeManager.StartFrame();
-
-        // Check for draw request
-        if (interpreter.GetRequestDrawFlag())
-        {
-            interpreter.SetRequestDrawFlag(false);
-            interpreter.SetDrawFlag(true);
-        }
+    while (continueRunning){     
+        timeManager.UpdateTime(false);       
 
         continueRunning = inputManager.ProcessInput();
         
-        // Update time and calculate how many instructions to execute
-        timeManager.UpdateTime(false);
-        float deltaTime = timeManager.GetDeltaTime();
+        timerUpdates += timeManager.CalculateTimerUpdates();
+        UpdateTimers(interpreter, timerUpdates);
         
-        instructionsToExecute += deltaTime * timeManager.GetTargetIPF() * timeManager.GetTargetFPS(); //I per frame * FPS -> Istructions per second
-        timerUpdates += deltaTime * timeManager.GetTargetFPS();
+        instructionToExecute += timeManager.CalculateInstructionToExecute();
+        ExecuteInstructions(interpreter, timeManager, instructionToExecute);
         
-        // Execute instructions
-        while (instructionsToExecute >= 1.0f)
-        {
-            bool waitForVblank = interpreter.EmulateCycle();
-            timeManager.IncrementCycleCounter();
-            instructionsToExecute -= 1.0f;       
-            if (waitForVblank)
-            {
-                instructionsToExecute -= static_cast<int>(instructionsToExecute); //will leave only the part after the decimal
-            }     
-        }
+        TryRender(interpreter);
         
-        // Update timers
-        while (timerUpdates >= 1.0f)
-        {
-            interpreter.UpdateTimers();
-            timerUpdates -= 1.0f;
-        }
-        
-        // Render if draw flag is set
-        if (interpreter.GetDrawFlag())
-        {
-            interpreter.SetDrawFlag(false);
-            renderer.RenderScreen();
-            renderer.SwapBuffer();
-        }
-        
-        timeManager.IncrementFrameCounter();
-        
-        timeManager.LimitFrameRate();   
+        EndFrame(timeManager);
     }
-   
+
     inputManager.Destroy();
 
     gfx_End();
@@ -152,4 +119,40 @@ tinystl::string HandleGameChoice()
     }
 
     return gameName;
+}
+
+void ExecuteInstructions(Interpreter& interpreter, TimeManager& timeManager, float& amountOfInstructionsToExecute)
+{
+    while (amountOfInstructionsToExecute > 0){
+        bool waitForVblank = interpreter.EmulateCycle();
+        timeManager.IncrementCycleCounter();       
+        amountOfInstructionsToExecute -= 1.0f;
+
+        if (waitForVblank) return;
+    }    
+}
+
+void UpdateTimers(Interpreter& interpreter, float& amountOfUpdates)
+{
+    while (amountOfUpdates > 0){
+        interpreter.UpdateTimers();
+        amountOfUpdates -= 1.0f;
+    }
+}
+
+void TryRender(Interpreter& interpreter)
+{
+    auto& renderer = Renderer::GetInstance();
+    if (interpreter.GetDrawFlag())
+    {
+        interpreter.SetDrawFlag(false);
+        renderer.RenderScreen();
+        renderer.SwapBuffer();
+    }
+}
+
+void EndFrame(TimeManager& timeManager)
+{
+    timeManager.IncrementFrameCounter();
+    timeManager.LimitFrameRate();
 }

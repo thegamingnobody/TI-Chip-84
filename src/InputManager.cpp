@@ -38,8 +38,7 @@ void InputManager::Destroy()
     m_Keymap.clear();
 }
 
-bool InputManager::ProcessInput()
-{
+bool InputManager::ProcessInput(){
 	m_KeyPressedThisFrame = false;
 	m_KeyReleasedThisFrame = false;
 
@@ -49,18 +48,15 @@ bool InputManager::ProcessInput()
 
     if ((kb_Data[6] & kb_Clear)) return false;
 
-    for (int i = 0; i < static_cast<int>(m_Keymap.size()); i++)
-    {
+    for (int i = 0; i < static_cast<int>(m_Keymap.size()); i++){
         bool isKeyPressed = (kb_Data[m_Keymap[i].Row] & m_Keymap[i].Mask);        
         bool wasKeyPressed = m_KeysStateLastFrame[i];
         
-        if (isKeyPressed && !wasKeyPressed)
-        {
+        if (isKeyPressed && !wasKeyPressed){
             m_KeyPressedThisFrame = true;
         }
         
-        if (!isKeyPressed && wasKeyPressed)
-        {
+        if (!isKeyPressed && wasKeyPressed){
             m_KeyReleasedThisFrame = true;
         }
 

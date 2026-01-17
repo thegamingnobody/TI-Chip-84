@@ -21,10 +21,10 @@ public:
 	bool GetDrawFlag() const;
 	void SetDrawFlag(bool newValue);
 
-	bool GetRequestDrawFlag() const;
-	void SetRequestDrawFlag(bool newValue);
 private:
 	uint16_t FetchOpcode() const;
+
+	void LoadFontSet();
 
 	//Instruction functions
 	bool Instruction_0NNN(uint16_t baseInstruction);
@@ -67,7 +67,6 @@ private:
 	// uint8_t m_SP{};
 
 	bool m_DrawFlag{ true };
-	bool m_DrawRequest{ true };
 	bool m_WaitForInput{ false };
 
 	uint16_t m_CurrentOpcode{};

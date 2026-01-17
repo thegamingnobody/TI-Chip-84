@@ -44,25 +44,26 @@ void TimeManager::UpdateTime(bool isGamePaused)
 	if (isGamePaused) return;
 
 	//check if timer is done
-	if (timer_ChkInterrupt(2, TIMER_RELOADED))
-	{
-		//reset the interrupt
-		timer_AckInterrupt(2, TIMER_RELOADED);
+	if (timer_ChkInterrupt(2, TIMER_RELOADED)){
+		timer_AckInterrupt(2, TIMER_RELOADED);					//reset the interrupt
 
-		// m_AverageCyclesPerSecond = (m_CyclesExecuted);
-		// m_AverageFramesPerSecond = (m_FrameUpdateCount);
+		m_AverageCyclesPerSecond *= m_AmountOfTimerInterrupts; 	//undo average calculations
+		m_AverageFramesPerSecond *= m_AmountOfTimerInterrupts;
+		
+		m_AverageCyclesPerSecond += m_CyclesExecuted; 			//add current frame data
+		m_AverageFramesPerSecond += m_FrameUpdateCount;
+		
+		m_AmountOfTimerInterrupts++;							//increment amount of samples taken
 
-		m_AverageCyclesPerSecond += (m_CyclesExecuted);
-		m_AverageFramesPerSecond += (m_FrameUpdateCount);
-		m_AverageCyclesPerSecond /= 2;
-		m_AverageFramesPerSecond /= 2;
+		m_AverageCyclesPerSecond /= m_AmountOfTimerInterrupts;	//calculate new averages
+		m_AverageFramesPerSecond /= m_AmountOfTimerInterrupts;
+		
+		dbg_printf("  FPS: %f\n", m_AverageFramesPerSecond);
+		dbg_printf("Cycle: %f\n", m_AverageCyclesPerSecond);
+		dbg_printf("*---------*\n");
 
 		m_CyclesExecuted = 0;
 		m_FrameUpdateCount = 0;
-
-		// dbg_printf("  FPS: %f\n", m_AverageFramesPerSecond);
-		// dbg_printf("Cycle: %f\n", m_AverageCyclesPerSecond);
-		// dbg_printf("*---------*\n");
 	}
 	
 }
@@ -70,29 +71,17 @@ void TimeManager::UpdateTime(bool isGamePaused)
 
 void TimeManager::LimitFrameRate()
 {
-	float targetSecondsPerFrame = (1.0f / m_TargetFPS);
-	
-	bool continueStalling{true};
-	float frameTime{};
-	float remaining{};
-	uint16_t msToDelay{};
-	while (continueStalling)
-	{
-		frameTime = ((float)(clock() - m_StartFrameTime)) / CLOCKS_PER_SEC;
-	
-		remaining = targetSecondsPerFrame - frameTime;
-		
-		if (remaining <= 0.0f)
-		{
-			continueStalling = false;
-		}
+	float targetFrameTime  = 1.0f / m_TargetFPS;
 
-		msToDelay = static_cast<uint16_t>(remaining * 1000);
-		if (msToDelay < 1)
-		{
-			continueStalling = false;
-		}
-	}
+	clock_t now{ clock() };
+	float frameTime{ (float)(now - m_CurrentTime) / CLOCKS_PER_SEC };
+
+	if (frameTime >= targetFrameTime) return;
+
+	uint16_t msToDelay{ (uint16_t)((targetFrameTime - frameTime) * 1000.0f) };
+	if (msToDelay <= 0) return;
+
+	delay(msToDelay);
 
 	// dbg_printf("  targetFrameTime: %f\n", targetSecondsPerFrame);
 	// dbg_printf("        frameTime: %f\n", frameTime);
@@ -101,7 +90,12 @@ void TimeManager::LimitFrameRate()
 	// dbg_printf("*-------------------*\n");
 }
 
-void TimeManager::StartFrame()
+float TimeManager::CalculateInstructionToExecute() const
 {
-	m_StartFrameTime = clock();
+	return m_DeltaTime * m_TargetIPF * m_TargetFPS;
+}
+
+float TimeManager::CalculateTimerUpdates() const
+{
+	return m_DeltaTime * m_TargetFPS;
 }

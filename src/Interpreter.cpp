@@ -20,6 +20,8 @@ void Interpreter::Init()
 {
    	m_Memory.resize(MEMORY_SIZE);
     m_V.resize(NR_OF_REGISTERS);
+
+	LoadFontSet();
 }
 
 void Interpreter::LoadGame(const char* appVarName)
@@ -114,7 +116,7 @@ bool Interpreter::EmulateCycle()
         break;  
     case 0xD:
         Instruction_DXYN(opcode);
-		if (m_DrawRequest and QuirkManager::GetInstance().GetVblankQuirk())
+		if (m_DrawFlag and QuirkManager::GetInstance().GetVblankQuirk())
 		{
 			waitForVblank = true;
 		}
@@ -153,13 +155,34 @@ void Interpreter::SetDrawFlag(bool newValue)
 	m_DrawFlag = newValue;
 }
 
-bool Interpreter::GetRequestDrawFlag() const
+void Interpreter::LoadFontSet()
 {
-	return m_DrawRequest;
-}
-void Interpreter::SetRequestDrawFlag(bool newValue)
-{
-	m_DrawRequest = newValue;
+	m_PC = FONTSET_ADDRESS;
+
+	uint8_t array[80] = {0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+						 0x20, 0x60, 0x20, 0x20, 0x70, // 1
+						 0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+						 0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+						 0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+						 0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+						 0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+						 0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+						 0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+						 0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+						 0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+						 0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+						 0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+						 0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+						 0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+						 0xF0, 0x80, 0xF0, 0x80, 0x80};  // F
+
+	tinystl::vector<uint8_t> font (array, array + 80);
+
+	for (size_t i = 0; i < font.size(); ++i)
+	{
+		m_Memory[i + m_PC] = font[i];
+	}
+
 }
 
 uint16_t Interpreter::FetchOpcode() const
@@ -177,7 +200,7 @@ bool Interpreter::Instruction_0NNN(uint16_t baseInstruction)
 	{
 	case 0x00E0:
 		Renderer::GetInstance().FillScreen(false);
-		m_DrawRequest = true;
+		m_DrawFlag = true;
 		break;
 	case 0x00EE:
 		m_PC = m_Stack.top();
@@ -525,7 +548,7 @@ bool Interpreter::Instruction_DXYN(uint16_t baseInstruction)
 		}
 	}
 
-	m_DrawRequest = true;
+	m_DrawFlag = true;
 
 	return true;
 }
