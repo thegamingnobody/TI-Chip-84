@@ -43,7 +43,7 @@ bool GameLoader::IsChip8Game(const char* appVarName)
 
     // the converter writes "Chip84" into the file, so check for this to see if the file is a runnable file or not
     uint8_t signature[numberOfSignatureCharacters];
-    size_t read = ti_Read(signature, 1, sizeof(signature), handle);
+    ti_Read(signature, 1, sizeof(signature), handle);
     ti_Close(handle);
 
     const uint8_t expected[numberOfSignatureCharacters] = { 'C','h','i','p','8','4' };
